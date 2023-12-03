@@ -1,0 +1,8 @@
+{
+	"ESS_Char_Sonic":  { "File": "ESS.png", "Rect": "16,1,32,40", "Center": "18,40" },
+	"ESS_Life_Sonic":  { "File": "ESS.png", "Rect": "8,45,16,16", "Center": "8,16" },
+	"ESS_Cont_Sonic":  { "File": "ESS.png", "Rect": "42,44,16,16", "Center": "8,16" },
+	"menu_characters_sonic":  { "File": "DataSel.png", "Rect": "48,0,32,40", "Center": "16,20" },
+	"menu_characters_sonic_tails":  { "File": "DataSel.png", "Rect": "3,0,40,40", "Center": "20,20" },
+	"charselect_sonic":  { "File": "DataSel.bmp", "Rect": "48,0,32,40", "Center": "16,20" },
+}

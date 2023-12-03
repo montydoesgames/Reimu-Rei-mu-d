@@ -1,0 +1,15 @@
+{
+	"hud_lives_icon_sonic":  { "File": "LifeText.png", "Rect": "0,0,1,1", "Center": "0,0" },
+	"LifeText_Reimu":  { "File": "LifeText.png", "Rect": "0,0,34,16", "Center": "0,0" },
+	"icon_Reimu":  { "File": "ReimuIcon.png", "Rect": "0,0,16,16", "Center": "8,8" },
+	"icon_PC98Reimu":  { "File": "ReimuIcon.png", "Rect": "16,0,16,16", "Center": "8,8" },
+	"icon_MarisaReimu":  { "File": "ReimuIcon.png", "Rect": "32,0,16,16", "Center": "8,8" },
+	"icon_CirnoReimu":  { "File": "ReimuIcon.png", "Rect": "48,0,16,16", "Center": "8,8" },
+	"icon_FlandreReimu":  { "File": "ReimuIcon.png", "Rect": "0,16,16,16", "Center": "8,8" },
+	"icon_KoishiReimu":  { "File": "ReimuIcon.png", "Rect": "16,16,16,16", "Center": "8,8" },
+	"icon_TakaneReimu":  { "File": "ReimuIcon.png", "Rect": "32,16,16,16", "Center": "8,8" },
+	"icon_AppleReimu":  { "File": "ReimuIcon.png", "Rect": "48,16,16,16", "Center": "8,8" },
+	"icon_RemiliaReimu":  { "File": "Remilia.png", "Rect": "0,0,16,16", "Center": "8,8" },
+	"icon_SuikaReimu":  { "File": "Woah-oh-oh-oh.png", "Rect": "0,0,16,16", "Center": "8,8" },
+	"icon_ReimuFrisk":  { "File": "Woah-oh-oh-oh.png", "Rect": "0,16,16,16", "Center": "8,8" }
+}
