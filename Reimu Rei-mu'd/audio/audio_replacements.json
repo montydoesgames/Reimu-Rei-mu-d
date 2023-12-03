@@ -1,0 +1,12 @@
+{
+    //Super themes
+    "2C_sakuya": { "File": "NightofNights.ogg", "Type": "Music", "Name": "Night of Nights (16-bit Remix)"},
+    "2C_cirno": { "File": "BelovedTomboyishGirl.ogg", "Type": "Music", "Name": "Beloved Tomboyish Girl (16-bit Remix)"},
+    "2C_reimu": { "File": "EasternMysticalTaleOfRomance.ogg", "Type": "Music", "Name": "Eastern Mystical Tale of Romance"},
+
+    //Bad Apple real
+    "01_touhou": { "File": "BadApple.ogg", "Type": "Music", "Name": "Bad Apple!! (16-bit Remix)"},
+
+
+    "69_undereimu": { "File": "Whoa-oh-oh-oh-oh-oh-oh-oh-oh-oh.ogg", "Type": "Music", "Name": "Story of Undertale"}
+}
