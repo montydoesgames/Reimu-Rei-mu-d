@@ -1,0 +1,18 @@
+{
+	"sonic_dropdash_kame_0":  { "File": "kame_reimu.bmp", "Rect": "1,1,30,30", "Center": "15,15" },
+	"sonic_dropdash_kame_1":  { "File": "kame_reimu.bmp", "Rect": "63,1,28,30", "Center": "14,15" },
+	"sonic_dropdash_kame_2":  { "File": "kame_reimu.bmp", "Rect": "32,1,30,30", "Center": "15,15" },
+	"sonic_dropdash_kame_3":  { "File": "kame_reimu.bmp", "Rect": "1,32,30,28", "Center": "15,14" },
+	"sonic_dropdash_kame_4":  { "File": "kame_reimu.bmp", "Rect": "1,1,30,30", "Center": "15,15" },
+	"sonic_dropdash_kame_5":  { "File": "kame_reimu.bmp", "Rect": "92,1,28,30", "Center": "14,15" },
+	"sonic_dropdash_kame_6":  { "File": "kame_reimu.bmp", "Rect": "32,1,30,30", "Center": "15,15" },
+	"sonic_dropdash_kame_7":  { "File": "kame_reimu.bmp", "Rect": "32,32,30,28", "Center": "15,14" },
+	"sonic_dropdash_kame_8":  { "File": "kame_reimu.bmp", "Rect": "1,1,30,30", "Center": "15,15" },
+	"sonic_dropdash_kame_9":  { "File": "kame_reimu.bmp", "Rect": "121,1,28,30", "Center": "14,15" },
+	"sonic_dropdash_kame_10":  { "File": "kame_reimu.bmp", "Rect": "32,1,30,30", "Center": "15,15" },
+	"sonic_dropdash_kame_11":  { "File": "kame_reimu.bmp", "Rect": "63,32,30,28", "Center": "15,14" },
+	"sonic_dropdash_kame_12":  { "File": "kame_reimu.bmp", "Rect": "1,1,30,30", "Center": "15,15" },
+	"sonic_dropdash_kame_13":  { "File": "kame_reimu.bmp", "Rect": "150,1,28,30", "Center": "14,15" },
+	"sonic_dropdash_kame_14":  { "File": "kame_reimu.bmp", "Rect": "32,1,30,30", "Center": "15,15" },
+	"sonic_dropdash_kame_15":  { "File": "kame_reimu.bmp", "Rect": "94,32,30,28", "Center": "15,14" }
+}

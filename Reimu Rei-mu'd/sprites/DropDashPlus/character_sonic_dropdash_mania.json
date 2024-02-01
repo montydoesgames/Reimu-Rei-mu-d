@@ -1,0 +1,18 @@
+{
+	"sonic_dropdash_mania_0":  { "File": "mania_reimu.bmp", "Rect": "1,1,30,30", "Center": "15,15" },
+	"sonic_dropdash_mania_1":  { "File": "mania_reimu.bmp", "Rect": "63,1,28,30", "Center": "14,15" },
+	"sonic_dropdash_mania_2":  { "File": "mania_reimu.bmp", "Rect": "32,1,30,30", "Center": "15,15" },
+	"sonic_dropdash_mania_3":  { "File": "mania_reimu.bmp", "Rect": "1,32,30,28", "Center": "15,14" },
+	"sonic_dropdash_mania_4":  { "File": "mania_reimu.bmp", "Rect": "1,1,30,30", "Center": "15,15" },
+	"sonic_dropdash_mania_5":  { "File": "mania_reimu.bmp", "Rect": "92,1,28,30", "Center": "14,15" },
+	"sonic_dropdash_mania_6":  { "File": "mania_reimu.bmp", "Rect": "32,1,30,30", "Center": "15,15" },
+	"sonic_dropdash_mania_7":  { "File": "mania_reimu.bmp", "Rect": "32,32,30,28", "Center": "15,14" },
+	"sonic_dropdash_mania_8":  { "File": "mania_reimu.bmp", "Rect": "1,1,30,30", "Center": "15,15" },
+	"sonic_dropdash_mania_9":  { "File": "mania_reimu.bmp", "Rect": "121,1,28,30", "Center": "14,15" },
+	"sonic_dropdash_mania_10":  { "File": "mania_reimu.bmp", "Rect": "32,1,30,30", "Center": "15,15" },
+	"sonic_dropdash_mania_11":  { "File": "mania_reimu.bmp", "Rect": "63,32,30,28", "Center": "15,14" },
+	"sonic_dropdash_mania_12":  { "File": "mania_reimu.bmp", "Rect": "1,1,30,30", "Center": "15,15" },
+	"sonic_dropdash_mania_13":  { "File": "mania_reimu.bmp", "Rect": "150,1,28,30", "Center": "14,15" },
+	"sonic_dropdash_mania_14":  { "File": "mania_reimu.bmp", "Rect": "32,1,30,30", "Center": "15,15" },
+	"sonic_dropdash_mania_15":  { "File": "mania_reimu.bmp", "Rect": "94,32,30,28", "Center": "15,14" }
+}

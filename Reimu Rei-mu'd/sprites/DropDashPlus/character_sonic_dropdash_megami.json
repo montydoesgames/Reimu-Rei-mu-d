@@ -1,0 +1,18 @@
+{
+	"sonic_dropdash_megami_0":  { "File": "megami_reimu.bmp", "Rect": "1,1,30,30", "Center": "15,15" },
+	"sonic_dropdash_megami_1":  { "File": "megami_reimu.bmp", "Rect": "63,1,28,30", "Center": "14,15" },
+	"sonic_dropdash_megami_2":  { "File": "megami_reimu.bmp", "Rect": "32,1,30,30", "Center": "15,15" },
+	"sonic_dropdash_megami_3":  { "File": "megami_reimu.bmp", "Rect": "1,32,30,28", "Center": "15,14" },
+	"sonic_dropdash_megami_4":  { "File": "megami_reimu.bmp", "Rect": "1,1,30,30", "Center": "15,15" },
+	"sonic_dropdash_megami_5":  { "File": "megami_reimu.bmp", "Rect": "92,1,28,30", "Center": "14,15" },
+	"sonic_dropdash_megami_6":  { "File": "megami_reimu.bmp", "Rect": "32,1,30,30", "Center": "15,15" },
+	"sonic_dropdash_megami_7":  { "File": "megami_reimu.bmp", "Rect": "32,32,30,28", "Center": "15,14" },
+	"sonic_dropdash_megami_8":  { "File": "megami_reimu.bmp", "Rect": "1,1,30,30", "Center": "15,15" },
+	"sonic_dropdash_megami_9":  { "File": "megami_reimu.bmp", "Rect": "121,1,28,30", "Center": "14,15" },
+	"sonic_dropdash_megami_10":  { "File": "megami_reimu.bmp", "Rect": "32,1,30,30", "Center": "15,15" },
+	"sonic_dropdash_megami_11":  { "File": "megami_reimu.bmp", "Rect": "63,32,30,28", "Center": "15,14" },
+	"sonic_dropdash_megami_12":  { "File": "megami_reimu.bmp", "Rect": "1,1,30,30", "Center": "15,15" },
+	"sonic_dropdash_megami_13":  { "File": "megami_reimu.bmp", "Rect": "150,1,28,30", "Center": "14,15" },
+	"sonic_dropdash_megami_14":  { "File": "megami_reimu.bmp", "Rect": "32,1,30,30", "Center": "15,15" },
+	"sonic_dropdash_megami_15":  { "File": "megami_reimu.bmp", "Rect": "94,32,30,28", "Center": "15,14" }
+}

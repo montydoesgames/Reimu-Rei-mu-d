@@ -1,0 +1,18 @@
+{
+	"sonic_dropdash_origins_0":  { "File": "origins_reimu.bmp", "Rect": "32,1,30,30", "Center": "15,15" },
+	"sonic_dropdash_origins_1":  { "File": "origins_reimu.bmp", "Rect": "63,1,28,30", "Center": "14,15" },
+	"sonic_dropdash_origins_2":  { "File": "origins_reimu.bmp", "Rect": "1,1,30,30", "Center": "15,15" },
+	"sonic_dropdash_origins_3":  { "File": "origins_reimu.bmp", "Rect": "92,1,28,30", "Center": "14,15" },
+	"sonic_dropdash_origins_4":  { "File": "origins_reimu.bmp", "Rect": "32,1,30,30", "Center": "15,15" },
+	"sonic_dropdash_origins_5":  { "File": "origins_reimu.bmp", "Rect": "121,1,28,30", "Center": "14,15" },
+	"sonic_dropdash_origins_6":  { "File": "origins_reimu.bmp", "Rect": "1,1,30,30", "Center": "15,15" },
+	"sonic_dropdash_origins_7":  { "File": "origins_reimu.bmp", "Rect": "150,1,28,30", "Center": "14,15" },
+	"sonic_dropdash_origins_8":  { "File": "origins_reimu.bmp", "Rect": "32,1,30,30", "Center": "15,15" },
+	"sonic_dropdash_origins_9":  { "File": "origins_reimu.bmp", "Rect": "1,32,30,28", "Center": "15,14" },
+	"sonic_dropdash_origins_10":  { "File": "origins_reimu.bmp", "Rect": "1,1,30,30", "Center": "15,15" },
+	"sonic_dropdash_origins_11":  { "File": "origins_reimu.bmp", "Rect": "32,32,30,28", "Center": "15,14" },
+	"sonic_dropdash_origins_12":  { "File": "origins_reimu.bmp", "Rect": "32,1,30,30", "Center": "15,15" },
+	"sonic_dropdash_origins_13":  { "File": "origins_reimu.bmp", "Rect": "63,32,30,28", "Center": "15,14" },
+	"sonic_dropdash_origins_14":  { "File": "origins_reimu.bmp", "Rect": "1,1,30,30", "Center": "15,15" },
+	"sonic_dropdash_origins_15":  { "File": "origins_reimu.bmp", "Rect": "94,32,30,28", "Center": "15,14" }
+}
