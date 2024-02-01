@@ -8,6 +8,6 @@
 	"charselect_reimu_paired":  { "File": "DataSel.bmp", "Rect": "0,0,32,40", "Center": "16,20" },
 	"charselect_reimujoker":  { "File": "P5/DataSel.bmp", "Rect": "48,0,32,40", "Center": "16,20" },
 	"charselect_reimujoker_paired":  { "File": "P5/DataSel.bmp", "Rect": "0,0,32,40", "Center": "16,20" },
-	"charselect_reimuglow":  { "File": "Glow/DataSel.bmp", "Rect": "48,0,32,40", "Center": "16,20" },
-	"charselect_reimuglow_paired":  { "File": "Glow/DataSel.bmp", "Rect": "0,0,32,40", "Center": "16,20" },
+	"charselect_reimueyesglow":  { "File": "Glow/DataSel.bmp", "Rect": "48,0,32,40", "Center": "16,20" },
+	"charselect_reimueyesglow_paired":  { "File": "Glow/DataSel.bmp", "Rect": "0,0,32,40", "Center": "16,20" },
 }
