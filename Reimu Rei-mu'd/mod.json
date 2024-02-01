@@ -5,7 +5,7 @@
     "Name": "Reimu Rei-mu'd",
     "Author": "HardSonicStorm, montydoesgames and Kiriii",
     "Description": "This mod replaces Sonic by Reimu from Touhou! Spritesheet was made by Hartflip0218, Blue Spheres sprites by Blueby and original mod by HardSonicStorm. Includes refreshed sprites, fixed and new palettes and Touhou songs provided by JX!",
-    "ModVersion": "1.0.0",
+    "ModVersion": "2: The rehabilitation update.",
     "GameVersion": "20.03.22.0",
     "UniqueID": "ReimuRemadeBaseMod",
 	},
@@ -40,7 +40,8 @@
 					"0x07": "Bad Apple",
 					"0x08": "Remilia",
 					"0x09": "Sakuya",
-					"0x0a": "Suika"
+					"0x0a": "Suika",
+					"0x0b": "Lookin' Cool"
 				}
 			},
 			{
