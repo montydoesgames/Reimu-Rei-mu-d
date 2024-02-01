@@ -15,4 +15,5 @@
 	"icon_YebbyReimu":  { "File": "AltEditionLife.png", "Rect": "112,16,16,16", "Center": "8,8" },
 	"icon_ReimuNitori":  { "File": "AltEditionLife.png", "Rect": "96,16,16,16", "Center": "8,8" },
 	"icon_Bluemu":  { "File": "AltEditionLife.png", "Rect": "112,16,16,16", "Center": "8,8" },
+	"icon_AltReimu":  { "File": "GenAlt.png", "Center": "8,8" },
 }
