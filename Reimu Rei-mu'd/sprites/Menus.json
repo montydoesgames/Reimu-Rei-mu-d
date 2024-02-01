@@ -4,5 +4,10 @@
 	"ESS_Cont_Sonic":  { "File": "ESS.png", "Rect": "42,44,16,16", "Center": "8,16" },
 	"menu_characters_sonic":  { "File": "DataSel.png", "Rect": "48,0,32,40", "Center": "16,20" },
 	"menu_characters_sonic_tails":  { "File": "DataSel.png", "Rect": "3,0,40,40", "Center": "20,20" },
-	"charselect_sonic":  { "File": "DataSel.bmp", "Rect": "48,0,32,40", "Center": "16,20" },
+	"charselect_reimu":  { "File": "DataSel.bmp", "Rect": "48,0,32,40", "Center": "16,20" },
+	"charselect_reimu_paired":  { "File": "DataSel.bmp", "Rect": "0,0,32,40", "Center": "16,20" },
+	"charselect_reimujoker":  { "File": "P5/DataSel.bmp", "Rect": "48,0,32,40", "Center": "16,20" },
+	"charselect_reimujoker_paired":  { "File": "P5/DataSel.bmp", "Rect": "0,0,32,40", "Center": "16,20" },
+	"charselect_reimuglow":  { "File": "Glow/DataSel.bmp", "Rect": "48,0,32,40", "Center": "16,20" },
+	"charselect_reimuglow_paired":  { "File": "Glow/DataSel.bmp", "Rect": "0,0,32,40", "Center": "16,20" },
 }

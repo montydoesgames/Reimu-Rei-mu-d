@@ -10,6 +10,17 @@
 	"icon_TakaneReimu":  { "File": "ReimuIcon.png", "Rect": "32,16,16,16", "Center": "8,8" },
 	"icon_AppleReimu":  { "File": "ReimuIcon.png", "Rect": "48,16,16,16", "Center": "8,8" },
 	"icon_RemiliaReimu":  { "File": "Remilia.png", "Rect": "0,0,16,16", "Center": "8,8" },
-	"icon_SuikaReimu":  { "File": "Woah-oh-oh-oh.png", "Rect": "0,0,16,16", "Center": "8,8" },
-	"icon_ReimuFrisk":  { "File": "Woah-oh-oh-oh.png", "Rect": "0,16,16,16", "Center": "8,8" }
+	"icon_SakuyaReimu":  { "File": "Woah-oh-oh-oh.png", "Rect": "0,0,16,16", "Center": "8,8" },
+	"icon_SuikaReimu":  { "File": "Suika.png", "Rect": "0,0,16,16", "Center": "8,8" },
+	"icon_JokerReimu":  { "File": "P5/Joker.png", "Center": "8,8" },
+	"icon_ReimuFrisk":  { "File": "Woah-oh-oh-oh.png", "Rect": "0,16,16,16", "Center": "8,8" },
+
+	"S3Complete_LevelSelectIcon_Sonic3": { "File": "S3CIcon.png", "Rect": "0,0,16,16"},
+	"S3Complete_LevelSelectIcon_Sonic2": { "File": "S3CIcon.png", "Rect": "0,0,16,16"},
+	"S3Complete_LevelSelectIcon_Sonic1": { "File": "S3CIcon.png", "Rect": "0,0,16,16"},
+	"S3Complete_LevelSelectIcon_Sonic1Acc": { "File": "S3CIcon.png", "Rect": "0,0,16,16"},
+	"S3Complete_LevelSelectIcon_Sonic2Acc": { "File": "S3CIcon.png", "Rect": "0,0,16,16"},
+	"S3Complete_LevelSelectIcon_Sonic2Mobile": { "File": "S3CIcon.png", "Rect": "0,0,16,16"},
+	"S3Complete_LevelSelectIcon_SonicCD": { "File": "S3CIcon.png", "Rect": "0,0,16,16"},
+	"S3Complete_LevelSelectIcon_ManiaSonic": { "File": "S3CIcon.png", "Rect": "0,0,16,16"},
 }
