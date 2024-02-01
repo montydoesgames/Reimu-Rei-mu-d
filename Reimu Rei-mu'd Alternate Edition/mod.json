@@ -30,20 +30,21 @@
 				"DefaultValue": "0",
 				"Options":
 				{
-					"0x0b": "Scarlet (SHADED)",
-					"0x0c": "Popipo (DolphinCube)",
-					"0x0d": "China (ScarlyNight)",
-					"0x0e": "Fallen (AnotherUser007)",
-					"0x0f": "Fluff (parajamas)",
-					"0x10": "Plushified (plushnoob)",
-					"0x11": "Nursing Home\n(scarlet_devill)",
-					"0x12": "Another Life (JC)",
-					"0x13": "Dancer's Love (Timer)",
-					"0x14": "Spriter's Tool (Luhke)",
-					"0x15": "Fumbler (Rookie)",
-					"0x16": "Uhr (montydoesgames)",
-					"0x17": "Emerald Waters\n(Bluespeed)",
-					"0x18": "Clubhouse (Yebby)"
+					"0x0c": "Scarlet (by SHADED)",
+					"0x0d": "Popipo (by DolphinCube)",
+					"0x0e": "China (by ScarlyNight)",
+					"0x0f": "Fallen (by AnotherUser007)",
+					"0x10": "Fluff (by parajamas)",
+					"0x11": "Plushified (by plushnoob)",
+					"0x12": "Nursing Home\n(by scarlet_devill)",
+					"0x13": "Another Life (by JC)",
+					"0x14": "Dancer's Love (by Timer)",
+					"0x15": "Spriter's Tool (by Luhke)",
+					"0x16": "Fumbler (by Rookie)",
+					"0x17": "Uhr (by montydoesgames)",
+					"0x18": "Emerald Waters\n(by Bluespeed)",
+					"0x19": "Clubhouse (by Yebby)",
+					"0x1a": "Genesis Accurate (Alt)"
 				}
 			},
 			{
