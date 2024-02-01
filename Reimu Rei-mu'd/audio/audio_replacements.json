@@ -7,6 +7,12 @@
     //Bad Apple real
     "01_touhou": { "File": "BadApple.ogg", "Type": "Music", "Name": "Bad Apple!! (16-bit Remix)"},
 
+    //Shhhh
+    "69_undereimu": { "File": "Whoa-oh-oh-oh-oh-oh-oh-oh-oh-oh.ogg", "Type": "Music", "Name": "Story of Undertale"},
 
-    "69_undereimu": { "File": "Whoa-oh-oh-oh-oh-oh-oh-oh-oh-oh.ogg", "Type": "Music", "Name": "Story of Undertale"}
+    //Persona music
+    "19_P5": { "File": "LastSuprise.ogg", "Type": "Music", "Name": "Last Suprise"},
+    "2F_P5": { "File": "BeneathTheMask.ogg", "Type": "Music", "Name": "Beneath The Mask (16-bit Remix)"},
+    "2F_P5R": { "File": "RoyalDays.ogg", "Type": "Music", "Name": "Royal Days"},
+    "18_P3": { "File": "MassDestruction.ogg", "Type": "Music", "Name": "Mass Destruction"},
 }
