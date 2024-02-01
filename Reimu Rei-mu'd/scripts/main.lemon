@@ -2,9 +2,10 @@ global u8 ReimuPalette
 global u8 ReimuAltPalette
 global u8 ReimuTheme
 global u8 ReimuFellFromTheLight
-global u8 Randomiser
+global u8 ReimuRandomiser
 global u8 ReimuNitoriCompat
 global bool Bluemu
+global bool ReimuEyesGlow
 
 /*
     Hey! Stop peaking at the code!
@@ -25,6 +26,7 @@ constant array<string> REIMU_PALETTE =
     "ReimuRemilia",
     "Sakuya",
     "Suika",
+    "PeReimu5",
     "Shaded",
     "Dolphin",
     "Scarly",
@@ -38,7 +40,8 @@ constant array<string> REIMU_PALETTE =
     "TripReimu",
     "FreddyReimu",
     "BlueSpeed",
-    "Yebby"
+    "Yebby",
+    "ReimuAlt"
 }
 
 constant array<string> REIMU_ICON =
@@ -54,6 +57,7 @@ constant array<string> REIMU_ICON =
     "icon_RemiliaReimu",
     "icon_SakuyaReimu",
     "icon_SuikaReimu",
+    "icon_JokerReimu",
     "icon_ShadedReimu",
     "icon_DolphinReimu",
     "icon_ScarlyReimu",
@@ -67,7 +71,8 @@ constant array<string> REIMU_ICON =
     "icon_TripReimu",
     "icon_FreddyReimu",
     "icon_BlueSpeedReimu",
-    "icon_YebbyReimu"
+    "icon_YebbyReimu",
+    "icon_AltReimu"
 }
 
 constant array<string> REIMU_SUPERTHEME =
@@ -81,12 +86,12 @@ constant array<string> REIMU_SUPERTHEME =
 
 function u64 getCharacterPaletteKey(u8 character)
 {
-    if (Randomiser == 0) && !(ReimuFellFromTheLight)
-        Randomiser = System.rand() % 20
+    if (ReimuRandomiser == 0) && !(ReimuFellFromTheLight)
+        ReimuRandomiser = System.rand() % 20
 
 	if (character == CHARACTER_SONIC) && (u8[0xffffe654] == 0)
 	{
-	    if (Randomiser == 4)
+	    if (ReimuRandomiser == 4)
 	        return "ReimuFrisk"
 	    else if System.loadPersistentData(0xffffffbe, "Bluemu", 0x01) && ReimuNitoriCompat && (ReimuAltPalette == 0x12)
 	        return "Bluemu"
@@ -104,7 +109,7 @@ function u64 getCharacterBluespherePaletteKey(u8 character)
 {
 	if (character == CHARACTER_SONIC) && (u8[0xffffe654] == 0)
 	{
-	    if (Randomiser == 4)
+	    if (ReimuRandomiser == 4)
 	        return "ReimuFrisk"
 	    else if System.loadPersistentData(0xffffffbe, "Bluemu", 0x01) && ReimuNitoriCompat && (ReimuAltPalette == 0x12)
 	        return "Bluemu"
@@ -122,7 +127,7 @@ function u64 getCharacterEndPosePaletteKey(u8 character)
 {
 	if (character == CHARACTER_SONIC) && (u8[0xffffe654] == 0)
 	{
-	    if (Randomiser == 4)
+	    if (ReimuRandomiser == 4)
 	        return "StoryofEndertale"
 	    else if System.loadPersistentData(0xffffffbe, "Bluemu", 0x01) && ReimuNitoriCompat && (ReimuPalette == 0x12)
 	        return "BluemuEnd"
@@ -138,11 +143,12 @@ function u64 getCharacterEndPosePaletteKey(u8 character)
 
 function void Standalone.playAudio(u8 sfxId)
 {
-if (sfxId <= 32) || (sfxId == 0xf0) || (sfxId == 0x2f)
+ReimuEyesGlow = (((ReimuPalette == 0x0b) && !Mods.isModActive("ReimuRemadeAlternatePalettes")) || ((ReimuAltPalette == 0x0c) && Mods.isModActive("ReimuRemadeAlternatePalettes"))) ? true : false
+if (sfxId <= 0x32) || (sfxId == 0xf0)
 {
-    if (Audio.isPlayingAudio("01_touhou") && (ReimuPalette == 7)) || (Audio.isPlayingAudio("69_undereimu"))
+    if (Audio.isPlayingAudio("01_touhou") && (ReimuPalette == 7) && !(Mods.isModActive("ReimuRemadeAlternatePalettes"))) || (Audio.isPlayingAudio("69_undereimu"))
         return
-    else if (Randomiser == 4) && (u8[0xffffe654] == 0) && (isMainCharacter(CHARACTER_SONIC))
+    else if (ReimuRandomiser == 4) && (u8[0xffffe654] == 0) && (isMainCharacter(CHARACTER_SONIC))
     {
             Audio.playAudio("69_undereimu", AudioContext.CONTEXT_MUSIC)
          return
@@ -164,8 +170,18 @@ if (sfxId <= 32) || (sfxId == 0xf0) || (sfxId == 0x2f)
             Audio.playAudio(REIMU_SUPERTHEME[ReimuTheme], AudioContext.CONTEXT_MUSIC)
         return
     }
+    else if (sfxId == 0x2f || sfxId == 0x19 || sfxId == 0x18) && (ReimuPalette == 0x0b) && !Mods.isModActive("ReimuRemadeAlternatePalettes")
+    {
+        if (sfxId == 0x18) //Mini Boss
+            Audio.playAudio("18_P3", AudioContext.CONTEXT_MUSIC)
+        else if (sfxId == 0x19) //Main Boss
+            Audio.playAudio("19_P5", AudioContext.CONTEXT_MUSIC)
+        else if (sfxId == 0x2f) && !(Audio.isPlayingAudio("2F_P5")) //Main Menu
+            Audio.playAudio("2F_P5", AudioContext.CONTEXT_MUSIC)
+        return
+    }
 }
-if !((sfxId == MUSIC_CTRL_FADEOUT) || (sfxId == MUSIC_CTRL_STOP) && ((ReimuPalette == 7) || (Randomiser == 4)))
+if !(((sfxId == MUSIC_CTRL_FADEOUT) || (sfxId == MUSIC_CTRL_STOP)) && ((ReimuPalette == 7) || (ReimuRandomiser == 4)))
     base.Standalone.playAudio(sfxId)
 }
 
@@ -181,10 +197,14 @@ function u64 Standalone.getModdedSoundKey(u64 soundKey, u8 sfxId, u8 soundRegTyp
 
 function bool Standalone.drawCharacterSprite(u8 character, u8 variant, s16 px, s16 py, bool asSmallGhost)
 {
-    //ES and Non-Sonic checks
-    if !(character == CHARACTER_SONIC && u8[0xffffe654] == 0)
-        return base.Standalone.drawCharacterSprite(character, variant, px, py, asSmallGhost)
+	u8 animationSprite = char.animation.sprite
 
+    //ES and Non-Sonic checks, along with sprites that don't need custom rotation
+    if !(character == CHARACTER_SONIC && u8[0xffffe654] == 0) || !((animationSprite >= 0x01 && animationSprite <= 0x30) || (animationSprite >= 0x78 && animationSprite <= 0x7f) || (char.state == char.state.SONIC_DROPDASH))
+    {
+        base.Standalone.drawCharacterSprite(character, variant, px, py, asSmallGhost)
+        return true
+    }
 	bool isPlayer1 = (variant == 0)
 	u32 characterAddress = isPlayer1 ? 0xffffb000 : 0xffffb04a
 
@@ -223,7 +243,6 @@ function bool Standalone.drawCharacterSprite(u8 character, u8 variant, s16 px, s
 			py -= move_area.bottom.target
 	}
 
-	u8 animationSprite = char.animation.sprite
 	u16 animationSpriteEx = Standalone.getModdedAnimationSpriteEx(character, animationSprite)
 	u8 flags = (char.render_flags & (SPRITE_FLAG_FLIP_X | SPRITE_FLAG_FLIP_Y))
 	u8 angle = 0
@@ -243,7 +262,7 @@ function bool Standalone.drawCharacterSprite(u8 character, u8 variant, s16 px, s
 			}
 			else if (animationSprite >= 0x21 && animationSprite <= 0x30)
 			{
-				if (sonic.fastrunanim.timer > 0)
+				if (sonic.fastrunanim.timer > 0) || super.active
 				{
 					animationSpriteEx = CHAR_ANIMSPRITE_SONIC_PEELOUT + (level.framecounter & 0x03)
 				}
@@ -314,21 +333,71 @@ function bool Standalone.drawCharacterSprite(u8 character, u8 variant, s16 px, s
 
 			if (rotationMode != 0)
 			{
-				s8 oldRotation = isPlayer1 ? oldRotationPlayer1 : oldRotationPlayer2
-				flags = char.flags & char.flag.FACING_LEFT		// This really has to be "char.flags", not "char.render_flags"
-
-				angle = char.rotation
-				if (rotationMode == 1)
+				bool useVanillaS3AIRRotation = true
+				if (Game.getSetting(SETTING_SMOOTH_ROTATION) == 2)
 				{
-					if (abs(s8(char.rotation)) <= 0x10 && abs(s8(oldRotation)) <= 0x10)
-					{
-						angle = 0
-					}
+					useVanillaS3AIRRotation = (char.flags & char.flag.IN_AIR || global.zone == 0x0c)	// Use in-air rotation in DDZ
+				}
 
-					if (angle != char.rotation)
+				if (useVanillaS3AIRRotation)
+				{
+					s8 oldRotation = isPlayer1 ? oldRotationPlayer1 : oldRotationPlayer2
+					flags = char.flags & char.flag.FACING_LEFT		// This really has to be "char.flags", not "char.render_flags"
+
+					angle = char.rotation
+					if (rotationMode == 1)
 					{
-						s8 diff = angle - oldRotation
-						angle = oldRotation + clamp(diff, -3, 3)
+						if (abs(s8(char.rotation)) <= 0x10 && abs(oldRotation) <= 0x10)
+						{
+							angle = 0
+						}
+
+						if (angle != char.rotation)
+						{
+							s8 diff = angle - oldRotation
+							angle = oldRotation + clamp(diff, -3, 3)
+						}
+					}
+				}
+				else
+				{
+					// Mania-accurate rotation #contributed by Elsie The Pict
+					u8 oldRotation = isPlayer1 ? oldRotationPlayer1 : oldRotationPlayer2
+					flags = char.flags & char.flag.FACING_LEFT		// This really has to be "char.flags", not "char.render_flags"
+
+					angle = char.rotation
+					if (rotationMode == 1)
+					{
+						if (char.rotation <= 0x04 || char.rotation >= 0xfc)
+						{
+							oldRotation = 0
+						}
+						else
+						{
+							u32 targetRotation = 0
+							if (char.rotation > 0x10 && char.rotation < 0xe8)
+								targetRotation = char.rotation
+
+							u32 rotate = targetRotation - oldRotation
+							u32 shift = (abs(char.groundspeed) <= 0x6000) + 1
+
+							if (abs(rotate) >= abs(rotate - 0x100))
+							{
+								if (abs(rotate - 0x200) < abs(rotate + 0x100))
+									oldRotation += (rotate - 0x100) >> shift
+								else
+									oldRotation += (rotate + 0x100) >> shift
+							}
+							else
+							{
+								if (abs(rotate) < abs(rotate + 0x100))
+									oldRotation += rotate >> shift
+								else
+									oldRotation += (rotate + 0x100) >> shift
+							}
+						}
+
+						angle = oldRotation & 0xff
 					}
 				}
 			}
@@ -344,7 +413,8 @@ function bool Standalone.drawCharacterSprite(u8 character, u8 variant, s16 px, s
 			// Special handling for Drop Dash & Super Peel-Out
 			if (animationSpriteEx >= CHAR_ANIMSPRITE_SONIC_PEELOUT)
 			{
-				key = stringformat("reimu_peelout_%d", animationSpriteEx - CHAR_ANIMSPRITE_SONIC_PEELOUT)
+			    string peeltype = (ReimuEyesGlow) ? ((ReimuPalette == 0x0b) ? "reimujoker" : "reimuglow") : "reimu"
+				key = stringformat("%s_peelout_%d", peeltype, animationSpriteEx - CHAR_ANIMSPRITE_SONIC_PEELOUT)
 			}
 			else
 			{
@@ -502,11 +572,7 @@ function void UpdateSonicAnimation()
 	//  - 0xff when running
 	//  - 0xfe when rolling (on ground or in air)
 	//  - between 0x00 and 0x7f in other cases (like standing, balancing, spring-jumping, getting hurt, etc.)
-	if (char.state == char.state.HANGING || char.state == char.state.SONIC_HANGON)
-	{
-	    fn03efba()
-	}
-	else if (D0.u8 < 0x80)
+	if (D0.u8 < 0x80)
 	{
 		updateSonicAnimationStanding()
 	}
@@ -522,10 +588,41 @@ function void UpdateSonicAnimation()
 
 function string getCharacterSpriteKey(u8 character, bool isSuperActive)
 {
+
+ReimuEyesGlow = (((ReimuPalette == 0x0b) && !Mods.isModActive("ReimuRemadeAlternatePalettes")) || ((ReimuAltPalette == 0x0c) && Mods.isModActive("ReimuRemadeAlternatePalettes"))) ? true : false
+
     if !(character == CHARACTER_SONIC) || !(u8[0xffffe654] == 0)
         return base.getCharacterSpriteKey(character, isSuperActive)
+    else if (ReimuEyesGlow) && (ReimuPalette == 0x0b) && !Mods.isModActive("ReimuRemadeAlternatePalettes")
+        return "character_reimu_joker"
+    else if (ReimuEyesGlow)
+        return "character_reimu_eyes"
     else
     	return "character_reimu"
+}
+
+function string getCharacterSelectSpriteKey(u8 character)
+{
+    if u8[0xffffe654] > 0
+        return base.getCharacterSelectSpriteKey(character)
+
+u16 characters = (objA0.update_address == 0x00d30c) ? dataselect.nosave_characters : u16[A0 + 0x34]
+ReimuEyesGlow = (((ReimuPalette == 0x0b) && !Mods.isModActive("ReimuRemadeAlternatePalettes")) || ((ReimuAltPalette == 0x0c) && Mods.isModActive("ReimuRemadeAlternatePalettes"))) ? true : false
+
+    if ReimuEyesGlow && (ReimuPalette == 0x0b) && (characters == CHARS_SONIC_ALONE) && (character == CHARACTER_SONIC)
+        return "charselect_reimujoker"
+    else if ReimuEyesGlow && (character == CHARACTER_SONIC)
+        return "charselect_reimujoker_paired"
+    else if ReimuEyesGlow && (ReimuPalette == 0x0b) && (characters == CHARS_SONIC_ALONE) && (character == CHARACTER_SONIC)
+        return "charselect_reimueyesglow"
+    else if ReimuEyesGlow && (character == CHARACTER_SONIC)
+        return "charselect_reimueyesglow_paired"
+    else if (characters == CHARS_SONIC_ALONE) && (character == CHARACTER_SONIC)
+        return "charselect_reimu"
+    else if (character == CHARACTER_SONIC)
+        return "charselect_reimu_paired"
+    else
+        return base.getCharacterSelectSpriteKey(character)
 }
 
 //# address-hook(0x00db44) end(0x00dbb2)
@@ -545,7 +642,7 @@ function void RenderHUD()
 			bool useMobilePosition = HUD.useMobileLivesDisplay()
 			u16 px = useMobilePosition ? (getScreenWidth() - baseX - 0x30) : baseX
 			u16 py = useMobilePosition ? baseY : 200
-			if (Randomiser == 4)
+			if (ReimuRandomiser == 4)
 			{
 			    HUD.drawSprite("icon_ReimuFrisk", px + 0x07, py + 0x08, renderQueue)
 			    ++renderQueue
@@ -570,8 +667,11 @@ function void RenderHUD()
 			    HUD.drawSprite(REIMU_ICON[ReimuAltPalette], px + 0x07, py + 0x08, renderQueue)
 			    ++renderQueue
 			}
-			HUD.drawSprite("LifeText_Reimu", px + 0x0f, py, renderQueue)
-			++renderQueue
+			if !Mods.isModActive("Megamix v5.0a Hud")
+			{
+    			HUD.drawSprite("LifeText_Reimu", px + 0x10, py, renderQueue)
+    			++renderQueue
+			}
 
 			if (lives_counter >= 10)
 				HUD.drawSmallDigit(u16((lives_counter / 10) % 10), px + 0x20, py + 8, renderQueue)
@@ -586,7 +686,7 @@ function u64 Monitor.getIconSpriteKey(u8 type)
 	{
 		if (ReimuNitoriCompat) && (Mods.isModActive("Nitori Kawashiro In 3 A.I.R."))
             return "icon_ReimuNitori"
-        else if (Randomiser == 4)
+        else if (ReimuRandomiser == 4)
             return "icon_ReimuFrisk"
         else
 	    	return REIMU_ICON[ReimuPalette]
@@ -594,12 +694,12 @@ function u64 Monitor.getIconSpriteKey(u8 type)
 return base.Monitor.getIconSpriteKey(type)
 }
 
-// Signpost and Result Nameplate renderhooking
+// Renderhooking
 function bool Standalone.onWriteToSpriteTable(s16 px, s16 py, u16 renderQueue)
 {
 	bool prioFlag = (objA0.sprite_attributes & 0x8000) != 0
 
-	if (objA0.update_address == 0x02dd98) || (objA0.update_address == 0x02ea50 || objA0.update_address == 0x02ec1e)
+	if ((objA0.update_address == 0x02dd98) || (objA0.update_address == 0x02ea50 || objA0.update_address == 0x02ec1e)) && !Mods.isModActive("Megamix v5.0a Hud")
 	{
 		if (objA0.animation.sprite == 0x13) && (u8[0xffffe654] == 0)
 		{
@@ -611,7 +711,8 @@ function bool Standalone.onWriteToSpriteTable(s16 px, s16 py, u16 renderQueue)
 	{
 		if (objA0.animation.sprite == 0) && (u8[0xffffe654] == 0)
 		{
-			Renderer.drawCustomSprite("Signpost_Reimu", px, py, 0x40, prioFlag ? SPRITE_FLAG_PRIO : 0, renderQueue+1)
+		    string Key = (ReimuEyesGlow) ? ((ReimuPalette == 0x0b) ? "ReimuJoker" : "ReimuGlow") : "Reimu"
+			Renderer.drawCustomSprite(stringformat("Signpost_%s", Key), px, py, 0x40, prioFlag ? SPRITE_FLAG_PRIO : 0, renderQueue+1)
 			return true
 		}
 	}
@@ -621,9 +722,9 @@ return base.Standalone.onWriteToSpriteTable(px, py, renderQueue)
 function string ExtraChar.Menu.actselect.items.menuitems.getNames(u8 character)
 {
 	if (character == 0x00)
-		return !(Randomiser == 4) ? "Reimu & Tails" : "Whoa-oh-oh-oh-oh-oh-oh-oh-oh-oh\n\nTails in Undertale"
+		return !(ReimuRandomiser == 4) ? "Reimu & Tails" : "Whoa-oh-oh-oh-oh-oh-oh-oh-oh-oh\n\nTails in Undertale"
 	else if (character == 0x01)
-		return !(Randomiser == 4) ? "Reimu" : "Whoa-oh-oh-oh-oh-oh-oh-oh-oh-oh\n\nStory of Undertale"
+		return !(ReimuRandomiser == 4) ? "Reimu" : "Whoa-oh-oh-oh-oh-oh-oh-oh-oh-oh\n\nStory of Undertale"
     else
         return base.ExtraChar.Menu.actselect.items.menuitems.getNames(character)
 }
@@ -700,6 +801,8 @@ function void Character.Initialization.Sonic()
 {
     if System.loadPersistentData(0xffffffbe, "Bluemu", 0x01)
     	AchievementsPlus.AchivementsManager.setAchievementComplete(REIMU_ACHIEVEMENT_BLUEMU)
+    else if (ReimuPalette == 7) && !(Mods.isModActive("ReimuRemadeAlternatePalettes"))
+        AchievementsPlus.AchivementsManager.setAchievementComplete(REIMU_ACHIEVEMENT_BADAPPLE)
 base.Character.Initialization.Sonic()
 }
 
@@ -712,4 +815,189 @@ function string getFallSpriteKey(u8 character)
 	    return "reimu_fall"
 	}
 return base.getFallSpriteKey(character)
+}
+
+function string MegamixHud.getCharName(u8 character, u8 extraslot)
+{
+	if (character == CHARACTER_SONIC) && (extraslot == 0)
+		return (ReimuRandomiser == 4) ? "frisk" : "reimu"
+
+return base.MegamixHud.getCharName(character, extraslot)
+}
+
+//Credits go to FancyDoggy for these Main Menu music scripts!
+
+function void MainMenuBG.Run()
+{
+	global.game_mode = 0x0c
+	global.zone_act = 0x0d01
+
+	// Load plane contents
+	camera.foreground.x.u16 = 0x0280
+	camera.foreground.y.u16 = 0
+	camera.background.x.u16 = 0
+	camera.background.y.u16 = 0x0800
+	fillPlane_DefaultUncropped(0xc000, camera.foreground.x.u16, camera.foreground.y.u16, 512, getScreenHeight())
+	fillPlane_DefaultUncropped(0xe000, camera.background.x.u16, camera.background.y.u16, 512, getScreenHeight())
+	camera.foreground.x.u16 += 22		// Move camera a few pixels to the right by default
+	u16 cameraForegroundX = camera.foreground.x.u16
+	u16 cameraBackgroundX = camera.background.x.u16
+
+
+	while (true)
+	{
+	    if (ReimuPalette == 0x0b) && !Mods.isModActive("ReimuRemadeAlternatePalettes")
+	    {
+		// Stop the hardcoded data select music to play our own
+			if(Audio.isPlayingAudio(MUSIC_DATASELECT))
+				Audio.stopChannel(0)
+
+			string soundKey = "2f_p5"
+
+
+			if(!Audio.isPlayingAudio(soundKey))
+				Audio.playOverride(soundKey, 0x10, 0x03, 0)
+
+            Renderer.drawCustomSprite("MainMenuBG_P5", 0, 0, 0, 0, 0xffff)
+		}
+		else
+		{
+			base.MainMenuBG.Run()
+			return
+		}
+
+
+		Renderer.resetSprites()
+
+		// Ocean palette effect
+		fn05928c()
+		VDP.copyToCRAMbyDMA(0xfffffc00, 0x0000, 0x80)
+
+		// Scrolling for water and clouds
+		{
+			camera.foreground.x.u16 = cameraForegroundX + MainMenuBG.scrollOffset
+			u16[0xffffee98] = cameraBackgroundX + MainMenuBG.scrollOffset
+
+			fn05b0a8()
+			u32[0xffffa800] -= 0x0200	// Partially undo the scrolling progress, to make it slightly slower
+
+			A4 = 0x05b15a
+			A5 = 0xffffa804
+			A1 = 0xffffe000		// Location of linewise scroll offsets
+			D0.u16 = 0x0300		// camera.background.y.u16 - 0x0500
+			D1.u16 = getScreenHeight() - 1
+			D3.u16 = camera.foreground.x.u16
+			fn04f0de()
+
+			// Manual correction for two lines with broken scrolling (also in outro)
+			u16[0xffffe0ee] = u16[0xffffe0f2]
+			u16[0xffffe16e] = u16[0xffffe172]
+			VDP.copyToVRAMbyDMA(0xffffe000, 0xf000, getScreenHeight() * 4)
+		}
+
+		Renderer.drawCustomSprite("sonic3air_logo", MainMenuBG.logoPosition, 11, 0, 0, 0xa000)
+
+		yieldExecution()
+		++level.framecounter
+	}
+	
+}
+
+function void initializeMainGame()
+{
+	// Stop Main Menu music
+	Audio.stopChannel(0x03)
+
+	base.initializeMainGame()
+}
+
+function void DataSelect.update()
+{
+	base.DataSelect.update()
+
+	// Stop main menu music
+	Audio.stopChannel(0x03)
+}
+
+//# address-hook(0x00a85e) end(0x00aa24)
+function void CompetitionMode.MainMenu()
+{
+	// Stop main menu music
+	Audio.stopChannel(0x03)
+
+	base.CompetitionMode.MainMenu()
+}
+
+function void LevelSelect.init()
+{
+	// Stop main menu music
+	Audio.stopChannel(0x03)
+
+	base.LevelSelect.init()
+	if (ReimuPalette == 0x0b) && !Mods.isModActive("ReimuRemadeAlternatePalettes")
+    	Audio.playAudio("2F_P5R", AudioContext.CONTEXT_MUSIC) //Play Royal Days
+}
+
+function bool LevelSelect.innerUpdate()
+{
+
+	// Stop main menu music
+	Audio.stopChannel(0x03)
+
+	return base.LevelSelect.innerUpdate()
+}
+
+//# address-hook(0x04c97e) end(0x04cb18)
+function void fn04c97e()
+{
+    // Stop main menu music
+    Audio.stopChannel(0x03)
+
+  base.fn04c97e()
+}
+
+function void GameMode.MainGame()
+{
+    // Stop main menu music
+    Audio.stopChannel(0x03)
+    base.GameMode.MainGame()
+}
+
+function void BlueSpheresTimer.Menu.lobby.setup()
+{
+
+	if (Mods.isModActive("Blue Sphere Time Attack"))
+	{
+ 		Audio.stopChannel(0x03)
+		base.BlueSpheresTimer.Menu.lobby.setup()
+	
+	}
+}
+
+function void Game.returnToMainMenu()
+{
+	if(ReimuPalette == 0x0b) && !Mods.isModActive("ReimuRemadeAlternatePalettes")
+	{
+		if(Audio.isPlayingAudio(MUSIC_DATASELECT))
+			Audio.stopChannel(0)
+			
+
+		string soundKey = "2f_p5"
+
+
+		if(!Audio.isPlayingAudio(soundKey))
+		Audio.playOverride(soundKey, 0x10, 0x03, 0)
+	}
+	base.Game.returnToMainMenu()
+}
+
+function void DataSelect.setup()
+{
+base.DataSelect.setup()
+if (ReimuPalette == 0x0b) && !Mods.isModActive("ReimuRemadeAlternatePalettes")
+{
+		Audio.stopChannel(0x03)
+
+            Audio.playAudio("2F_P5R", AudioContext.CONTEXT_MUSIC) //Play Royal Days
+}
 }
