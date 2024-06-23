@@ -1,6 +1,6 @@
 {
 
-"Metadata":
+	"Metadata":
     {
     "Name": "Reimu Rei-mu'd",
     "Author": "HardSonicStorm, montydoesgames and Kiriii",
@@ -8,15 +8,6 @@
     "ModVersion": "2: The rehabilitation update.",
     "GameVersion": "20.03.22.0",
     "UniqueID": "ReimuRemadeBaseMod",
-	},
-	"OtherMods":
-	{
-	    "ReimuRemadeAlternatePalettes":
-	    {
-	        "DisplayName": "Reimu Rei-mu'd: Alternate Edition",
-	        "IsRequired": "0",
-	        "Priority": "Higher"
-	    }
 	},
 	"Settings":
 	{
