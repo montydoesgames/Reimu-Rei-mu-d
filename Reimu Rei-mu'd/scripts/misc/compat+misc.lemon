@@ -1,0 +1,104 @@
+function string ExtraChar.Menu.actselect.items.menuitems.getNames(u8 character)
+{
+	if (character == 0x00) && (global.characters == 4)
+		return !(ReimuRandomiser == 4) ? "Reimu & Tails" : "Whoa-oh-oh-oh-oh-oh-oh-oh-oh-oh\n\nTails in Undertale"
+	else if (character == 0x01) && (global.characters == 4)
+		return !(ReimuRandomiser == 4) ? "Reimu" : "Whoa-oh-oh-oh-oh-oh-oh-oh-oh-oh\n\nStory of Undertale"
+    else
+        return base.ExtraChar.Menu.actselect.items.menuitems.getNames(character)
+}
+
+function string getFallSpriteKey(u8 character)
+{
+	if (character == CHARACTER_SONIC) && (u8[0xffffe654] == 0) && (global.characters == 4)
+	{
+	    return "reimu_fall"
+	}
+return base.getFallSpriteKey(character)
+}
+
+function string MegamixHud.getCharName(u8 character, u8 extraslot)
+{
+	if (character == CHARACTER_SONIC) && (extraslot == 0) && (global.characters == 4)
+		return (ReimuRandomiser == 4) ? "frisk" : "reimu"
+
+return base.MegamixHud.getCharName(character, extraslot)
+}
+
+//Credits go to FancyDoggy for these Main Menu music scripts!
+
+function void MainMenuBG.Run()
+{
+	global.game_mode = 0x0c
+	global.zone_act = 0x0d01
+
+	// Load plane contents
+	camera.foreground.x.u16 = 0x0280
+	camera.foreground.y.u16 = 0
+	camera.background.x.u16 = 0
+	camera.background.y.u16 = 0x0800
+	fillPlane_DefaultUncropped(0xc000, camera.foreground.x.u16, camera.foreground.y.u16, 512, getScreenHeight())
+	fillPlane_DefaultUncropped(0xe000, camera.background.x.u16, camera.background.y.u16, 512, getScreenHeight())
+	camera.foreground.x.u16 += 22		// Move camera a few pixels to the right by default
+	u16 cameraForegroundX = camera.foreground.x.u16
+	u16 cameraBackgroundX = camera.background.x.u16
+
+
+	while (true)
+	{
+	    if (ReimuPalette == 0x0b) && !Mods.isModActive("ReimuRemadeAlternatePalettes")
+	    {
+		// Stop the hardcoded data select music to play our own
+			if(Audio.isPlayingAudio(MUSIC_DATASELECT))
+				Audio.stopChannel(0)
+
+			string soundKey = "2f_p5"
+
+
+			if(!Audio.isPlayingAudio(soundKey))
+				Audio.playOverride(soundKey, 0x10, 0x03, 0)
+
+            Renderer.drawCustomSprite("MainMenuBG_P5", 0, 0, 0, 0, 0xffff)
+		}
+		else
+		{
+			base.MainMenuBG.Run()
+			return
+		}
+
+
+		Renderer.resetSprites()
+
+		// Ocean palette effect
+		fn05928c()
+		VDP.copyToCRAMbyDMA(0xfffffc00, 0x0000, 0x80)
+
+		// Scrolling for water and clouds
+		{
+			camera.foreground.x.u16 = cameraForegroundX + MainMenuBG.scrollOffset
+			u16[0xffffee98] = cameraBackgroundX + MainMenuBG.scrollOffset
+
+			fn05b0a8()
+			u32[0xffffa800] -= 0x0200	// Partially undo the scrolling progress, to make it slightly slower
+
+			A4 = 0x05b15a
+			A5 = 0xffffa804
+			A1 = 0xffffe000		// Location of linewise scroll offsets
+			D0.u16 = 0x0300		// camera.background.y.u16 - 0x0500
+			D1.u16 = getScreenHeight() - 1
+			D3.u16 = camera.foreground.x.u16
+			fn04f0de()
+
+			// Manual correction for two lines with broken scrolling (also in outro)
+			u16[0xffffe0ee] = u16[0xffffe0f2]
+			u16[0xffffe16e] = u16[0xffffe172]
+			VDP.copyToVRAMbyDMA(0xffffe000, 0xf000, getScreenHeight() * 4)
+		}
+
+		Renderer.drawCustomSprite("sonic3air_logo", MainMenuBG.logoPosition, 11, 0, 0, 0xa000)
+
+		yieldExecution()
+		++level.framecounter
+	}
+	
+}

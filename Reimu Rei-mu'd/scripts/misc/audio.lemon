@@ -1,0 +1,162 @@
+global u8 ReimuTheme
+
+constant array<string> REIMU_SUPERTHEME =
+{
+    "2C",
+    "2C_reimu",
+    "2C_cirno",
+    "2C_sakuya",
+    "01_touhou",
+}
+
+function void Standalone.playAudio(u8 sfxId)
+{
+ReimuEyesGlow = (((ReimuPalette == 0x0b) && !Mods.isModActive("ReimuRemadeAlternatePalettes")) || ((ReimuPalette == 0x0c) && Mods.isModActive("ReimuRemadeAlternatePalettes"))) ? true : false
+if (sfxId <= 0x32) || (sfxId == 0xf0) && (global.characters == 4)
+{
+    if (Audio.isPlayingAudio("01_touhou") && (ReimuPalette == 7) && !(Mods.isModActive("ReimuRemadeAlternatePalettes"))) || (Audio.isPlayingAudio("69_undereimu"))
+        return
+    else if (ReimuRandomiser == 4) && (u8[0xffffe654] == 0) && (isMainCharacter(CHARACTER_SONIC))
+    {
+            Audio.playAudio("69_undereimu", AudioContext.CONTEXT_MUSIC)
+         return
+    }
+    else if (ReimuPalette == 7) && (isMainCharacter(CHARACTER_SONIC)) && (u8[0xffffe654] == 0)
+    {
+        Audio.playAudio("01_touhou", AudioContext.CONTEXT_MUSIC)
+        return
+    }
+    else if (sfxId == 0xf0) && (isMainCharacter(CHARACTER_SONIC)) && (u8[0xffffe654] == 0) && !((ReimuPalette == 7) || (ReimuTheme == 5))
+    {
+        if (ReimuPalette == 3) && (ReimuTheme == 0)
+            Audio.playAudio("2C_cirno", AudioContext.CONTEXT_MUSIC)
+        else if (ReimuPalette == 9) && (ReimuTheme == 0)
+            Audio.playAudio("2C_sakuya", AudioContext.CONTEXT_MUSIC)
+        else if (ReimuTheme == 0)
+            Audio.playAudio("2C_reimu", AudioContext.CONTEXT_MUSIC)
+        else if (ReimuTheme > 0)
+            Audio.playAudio(REIMU_SUPERTHEME[ReimuTheme], AudioContext.CONTEXT_MUSIC)
+        return
+    }
+    else if (sfxId == 0x2f || sfxId == 0x19 || sfxId == MUSIC_MINIBOSS || sfxId == MUSIC_MINIBOSS_2) && (ReimuPalette == 0x0b) && !Mods.isModActive("ReimuRemadeAlternatePalettes")
+    {
+        if (sfxId == MUSIC_MINIBOSS || sfxId == MUSIC_MINIBOSS_2) //Mini Boss
+            Audio.playAudio("18_P3", AudioContext.CONTEXT_MUSIC)
+        else if (sfxId == 0x19) //Main Boss
+            Audio.playAudio("19_P5", AudioContext.CONTEXT_MUSIC)
+        else if (sfxId == 0x2f) && !(Audio.isPlayingAudio("2F_P5")) //Main Menu
+            Audio.playAudio("2F_P5", AudioContext.CONTEXT_MUSIC)
+        return
+    }
+}
+if !(((sfxId == MUSIC_CTRL_FADEOUT) || (sfxId == MUSIC_CTRL_STOP)) && ((ReimuPalette == 7) || (ReimuRandomiser == 4)) && (global.characters == 4))
+    base.Standalone.playAudio(sfxId)
+}
+
+
+function u64 Standalone.getModdedSoundKey(u64 soundKey, u8 sfxId, u8 soundRegType)
+{
+    if (Audio.isPlayingAudio("01_touhou") && (ReimuPalette == 7)) || (Audio.isPlayingAudio("69_undereimu")) && (global.characters == 4)
+        return 0
+    else
+        return base.Standalone.getModdedSoundKey(soundKey, sfxId, soundRegType)
+}
+
+function void initializeMainGame()
+{
+	// Stop Main Menu music
+	Audio.stopChannel(0x03)
+
+	base.initializeMainGame()
+}
+
+function void DataSelect.update()
+{
+	base.DataSelect.update()
+
+	// Stop main menu music
+	Audio.stopChannel(0x03)
+}
+
+//# address-hook(0x00a85e) end(0x00aa24)
+function void CompetitionMode.MainMenu()
+{
+	// Stop main menu music
+	Audio.stopChannel(0x03)
+
+	base.CompetitionMode.MainMenu()
+}
+
+function void LevelSelect.init()
+{
+	// Stop main menu music
+	Audio.stopChannel(0x03)
+
+	base.LevelSelect.init()
+	if (ReimuPalette == 0x0b) && !Mods.isModActive("ReimuRemadeAlternatePalettes")
+    	Audio.playAudio("2F_P5R", AudioContext.CONTEXT_MUSIC) //Play Royal Days
+}
+
+function bool LevelSelect.innerUpdate()
+{
+
+	// Stop main menu music
+	Audio.stopChannel(0x03)
+
+	return base.LevelSelect.innerUpdate()
+}
+
+//# address-hook(0x04c97e) end(0x04cb18)
+function void fn04c97e()
+{
+    // Stop main menu music
+    Audio.stopChannel(0x03)
+
+  base.fn04c97e()
+}
+
+function void GameMode.MainGame()
+{
+    // Stop main menu music
+    Audio.stopChannel(0x03)
+    base.GameMode.MainGame()
+}
+
+function void BlueSpheresTimer.Menu.lobby.setup()
+{
+
+	if (Mods.isModActive("Blue Sphere Time Attack"))
+	{
+ 		Audio.stopChannel(0x03)
+		base.BlueSpheresTimer.Menu.lobby.setup()
+	
+	}
+}
+
+function void Game.returnToMainMenu()
+{
+	if(ReimuPalette == 0x0b) && !Mods.isModActive("ReimuRemadeAlternatePalettes")
+	{
+		if(Audio.isPlayingAudio(MUSIC_DATASELECT))
+			Audio.stopChannel(0)
+			
+
+		string soundKey = "2f_p5"
+
+
+		if(!Audio.isPlayingAudio(soundKey))
+		Audio.playOverride(soundKey, 0x10, 0x03, 0)
+	}
+	base.Game.returnToMainMenu()
+}
+
+function void DataSelect.setup()
+{
+base.DataSelect.setup()
+if (ReimuPalette == 0x0b) && !Mods.isModActive("ReimuRemadeAlternatePalettes")
+{
+		Audio.stopChannel(0x03)
+
+            Audio.playAudio("2F_P5R", AudioContext.CONTEXT_MUSIC) //Play Royal Days
+}
+}

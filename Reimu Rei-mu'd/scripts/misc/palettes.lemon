@@ -1,0 +1,53 @@
+global u8 ReimuPalette
+global u8 ReimuFellFromTheLight
+global u8 ReimuRandomiser
+global u8 ReimuNitoriCompat
+global bool ReimuEyesGlow
+
+/*
+    Hey! Stop peaking at the code!
+
+    Anyways, the code for the palette mods AND the base mod are included in here, for convenience's sake.
+*/
+
+function u64 getCharacterPaletteKey(u8 character)
+{
+    if (ReimuRandomiser == 0) && !(ReimuFellFromTheLight)
+        ReimuRandomiser = System.rand() % 20
+
+	if (character == CHARACTER_SONIC) && (u8[0xffffe654] == 0) && (global.characters == 4)
+	{
+	    if (ReimuRandomiser == 4)
+	        return "ReimuFrisk"
+        else if (ReimuNitoriCompat) && (Mods.isModActive("Nitori Kawashiro In 3 A.I.R."))
+	        return "NitoriReimu"
+	    else
+		    return stringformat("reimu_%d", ReimuPalette)
+	}
+	return base.getCharacterPaletteKey(character)
+}
+
+function u64 getCharacterBluespherePaletteKey(u8 character)
+{
+    if (ReimuRandomiser == 0) && !(ReimuFellFromTheLight)
+        ReimuRandomiser = System.rand() % 20
+
+	if (character == CHARACTER_SONIC) && (u8[0xffffe654] == 0) && (global.characters == 4)
+		return getCharacterPaletteKey(character)
+	else
+		return base.getCharacterBluespherePaletteKey(character)
+}
+
+function u64 getCharacterEndPosePaletteKey(u8 character)
+{
+	if (character == CHARACTER_SONIC) && (u8[0xffffe654] == 0) && (global.characters == 4)
+	{
+	    if (ReimuRandomiser == 4)
+	        return "StoryofEndertale"
+        else if (ReimuNitoriCompat) && (Mods.isModActive("Nitori Kawashiro In 3 A.I.R."))
+	        return "NitoriReimuEnd"
+        else
+            return stringformat("reimuend_%d", ReimuPalette)
+	}
+    return base.getCharacterEndPosePaletteKey(character)
+}
