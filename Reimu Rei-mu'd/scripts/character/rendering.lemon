@@ -1,0 +1,462 @@
+// Rewrite character sprite stuff, only for Sonic though.
+
+function bool Standalone.drawCharacterSprite(u8 character, u8 variant, s16 px, s16 py, bool asSmallGhost)
+{
+	u8 animationSprite = char.animation.sprite
+
+    //ES and Non-Sonic checks, along with sprites that don't need custom rotation
+    if !(character == CHARACTER_SONIC && u8[0xffffe654] == 0 && global.characters == 4) || !((animationSprite >= 0x01 && animationSprite <= 0x30) || (animationSprite >= 0x78 && animationSprite <= 0x7f) || (char.state == char.state.SONIC_DROPDASH))
+    {
+        base.Standalone.drawCharacterSprite(character, variant, px, py, asSmallGhost)
+        return true
+    }
+	bool isPlayer1 = (variant == 0)
+	u32 characterAddress = isPlayer1 ? 0xffffb000 : 0xffffb04a
+
+	// Check only needed for Tails' tails
+	if (variant == 2)
+	{
+		// No smooth rotation in Slot Machine
+		if (global.zone == 0x15)
+			return false
+
+		characterAddress = 0xffff0000 + u16[A0 + 0x30]
+
+		// Do not render when blinking after hit
+		if (u8[characterAddress + 0x34] != 0 && ((u8[characterAddress + 0x34] + 1) & 0x04) == 0)
+		{
+			// Prevent emulator-like rendering
+			return true
+		}
+
+		// Do not render when Tails looks into the background (e.g. LBZ 2 end cutscene) and in DEZ gravity transporters
+		if (u8[characterAddress + 0x22] >= 0x55 && u8[characterAddress + 0x22] <= 0x5b)
+		{
+			// Prevent emulator-like rendering
+			return true
+		}
+
+		isPlayer1 = (characterAddress == 0xffffb000)
+		character = CHARACTER_TAILS
+	}
+
+	if (level.vertical_wrap == 0xff00)
+	{
+		// For vertically wrapping levels, "normalize" py into interval [-move_area.bottom.target * 3/4, -move_area.bottom.target * 1/4]
+		py &= level.height.bitmask
+		if (py > move_area.bottom.target * 3/4 && move_area.bottom.target >= 0xe0)	// move_area.bottom.target is very low in DEZ boss act
+			py -= move_area.bottom.target
+	}
+
+	u16 animationSpriteEx = Standalone.getModdedAnimationSpriteEx(character, animationSprite)
+	u8 flags = (char.render_flags & (SPRITE_FLAG_FLIP_X | SPRITE_FLAG_FLIP_Y))
+	u8 angle = 0
+	u64 key = Standalone.getModdedAnimationSpriteKey(character, animationSpriteEx)		// First ask modded scripts
+	u8 rotationMode = 0
+
+	if (variant < 2)
+	{
+		if (character == CHARACTER_SONIC && animationSpriteEx == animationSprite)	// Last check is only false if modded scripts made their own changes
+		{
+			// Special handling for Drop Dash & Super Peel-Out
+			if (char.state == char.state.SONIC_DROPDASH)
+			{
+				char.animation.sprite = 0x96
+				char.animation.frame = 0
+				char.animation.timer = 1
+			}
+			else if (animationSprite >= 0x21 && animationSprite <= 0x30)
+			{
+				if (sonic.fastrunanim.timer > 0) || super.active
+				{
+					animationSpriteEx = CHAR_ANIMSPRITE_SONIC_PEELOUT + (level.framecounter & 0x03)
+				}
+			}
+		}
+
+		{
+			// Character
+			if (animationSprite >= 0x01 && animationSprite <= 0x20)
+			{
+				if !(Game.getSetting(SETTING_SMOOTH_ROTATION))
+				{
+					angle = (animationSprite - 0x01) / 8 * 0xe0
+					if ((char.flags & char.flag.FACING_LEFT) == (global.inv_gravity == 0))
+						angle = -angle
+					animationSprite = 0x01 + (animationSprite - 0x01) % 8
+				}
+				else
+				{
+    				// Walking animation
+    				animationSprite = 0x01 + (animationSprite - 0x01) % 8
+    				rotationMode = 1
+				}
+			}
+			else if (animationSprite >= 0x21 && animationSprite <= 0x30)
+			{
+				if !(Game.getSetting(SETTING_SMOOTH_ROTATION))
+				{
+					angle = (animationSprite - 0x21) / 4 * 0xe0
+					if ((char.flags & char.flag.FACING_LEFT) == (global.inv_gravity == 0))
+						angle = -angle
+					animationSprite = 0x21 + (animationSprite - 0x21) % 4
+				}
+				else
+				{
+				// Running animation
+				animationSprite = 0x21 + (animationSprite - 0x21) % 4
+				rotationMode = 1
+				}
+			}
+			else if (animationSprite >= 0x78 && animationSprite <= 0x7f)
+			{
+				if !(Game.getSetting(SETTING_SMOOTH_ROTATION))
+				{
+					angle = (animationSprite - 0x78) / 1 * 0xe0
+					if ((char.flags & char.flag.FACING_LEFT) == (global.inv_gravity == 0))
+						angle = -angle
+					animationSprite = 0x78 + (animationSprite - 0x78) % 1
+				}
+				else
+				{
+				// Swinging animation
+				animationSprite = 0x78
+				rotationMode = 2
+				}
+			}
+			else if (character == CHARACTER_TAILS && animationSprite >= 0xc3 && animationSprite <= 0xca)
+			{
+				// Tails' fastest run animation
+				animationSprite = 0xc3 + (animationSprite - 0xc3) % 2
+				rotationMode = 1
+			}
+			else if (character == CHARACTER_KNUCKLES && animationSprite == 0xc0)
+			{
+				// Only for DDZ
+				rotationMode = 1
+			}
+
+			if (rotationMode != 0)
+			{
+				bool useVanillaS3AIRRotation = true
+				if (Game.getSetting(SETTING_SMOOTH_ROTATION) == 2)
+				{
+					useVanillaS3AIRRotation = (char.flags & char.flag.IN_AIR || global.zone == 0x0c)	// Use in-air rotation in DDZ
+				}
+
+				if (useVanillaS3AIRRotation)
+				{
+					s8 oldRotation = isPlayer1 ? oldRotationPlayer1 : oldRotationPlayer2
+					flags = char.flags & char.flag.FACING_LEFT		// This really has to be "char.flags", not "char.render_flags"
+
+					angle = char.rotation
+					if (rotationMode == 1)
+					{
+						if (abs(s8(char.rotation)) <= 0x10 && abs(oldRotation) <= 0x10)
+						{
+							angle = 0
+						}
+
+						if (angle != char.rotation)
+						{
+							s8 diff = angle - oldRotation
+							angle = oldRotation + clamp(diff, -3, 3)
+						}
+					}
+				}
+				else
+				{
+					// Mania-accurate rotation #contributed by Elsie The Pict
+					u8 oldRotation = isPlayer1 ? oldRotationPlayer1 : oldRotationPlayer2
+					flags = char.flags & char.flag.FACING_LEFT		// This really has to be "char.flags", not "char.render_flags"
+
+					angle = char.rotation
+					if (rotationMode == 1)
+					{
+						if (char.rotation <= 0x04 || char.rotation >= 0xfc)
+						{
+							oldRotation = 0
+						}
+						else
+						{
+							u32 targetRotation = 0
+							if (char.rotation > 0x10 && char.rotation < 0xe8)
+								targetRotation = char.rotation
+
+							u32 rotate = targetRotation - oldRotation
+							u32 shift = (abs(char.groundspeed) <= 0x6000) + 1
+
+							if (abs(rotate) >= abs(rotate - 0x100))
+							{
+								if (abs(rotate - 0x200) < abs(rotate + 0x100))
+									oldRotation += (rotate - 0x100) >> shift
+								else
+									oldRotation += (rotate + 0x100) >> shift
+							}
+							else
+							{
+								if (abs(rotate) < abs(rotate + 0x100))
+									oldRotation += rotate >> shift
+								else
+									oldRotation += (rotate + 0x100) >> shift
+							}
+						}
+
+						angle = oldRotation & 0xff
+					}
+				}
+			}
+
+			if (isPlayer1)
+				oldRotationPlayer1 = angle
+			else
+				oldRotationPlayer2 = angle
+		}
+
+		if (key == 0 && animationSpriteEx >= 0x100)
+		{
+			// Special handling for Drop Dash & Super Peel-Out
+			if (animationSpriteEx >= CHAR_ANIMSPRITE_SONIC_PEELOUT)
+			{
+			    string peeltype = (ReimuEyesGlow) ? (((ReimuPalette == 0x0b) && !Mods.isModActive("ReimuRemadeAlternatePalettes")) ? "reimujoker" : "reimuglow") : "reimu"
+				key = stringformat("%s_peelout_%d", peeltype, animationSpriteEx - CHAR_ANIMSPRITE_SONIC_PEELOUT)
+			}
+			else
+			{
+				key = stringformat("reimu_dropdash_%d", animationSpriteEx - CHAR_ANIMSPRITE_SONIC_DROPDASH)
+			}
+		}
+		if (isPlayer1)
+			timeattack.animSpriteEx = animationSpriteEx
+
+		if (key == 0)
+		{
+			key = stringformat(stringformat("%s_0x%02x", getCharacterSpriteKey(character)), animationSprite)
+
+			if (!Renderer.hasCustomSprite(key))
+			{
+				u32 sourceBase    = (character == CHARACTER_SONIC) ? ((animationSprite >= 0xda) ? 0x140060 : 0x100000) : (character == CHARACTER_TAILS) ? ((animationSprite >= 0xd1) ? 0x143d00 : 0x3200e0) : 0x1200e0
+				u32 tableAddress  = (character == CHARACTER_SONIC) ? 0x148182 : (character == CHARACTER_TAILS) ? 0x14a08a : 0x14bd0a
+				u32 mappingOffset = (character == CHARACTER_SONIC) ? 0x146620 : (character == CHARACTER_TAILS) ? 0x148eb8 : 0x14a8d6		// Not really necessary here, we could also use "char.mapping_offset"
+
+				key = Renderer.setupCustomCharacterSprite(sourceBase, tableAddress, mappingOffset, animationSprite, 0x00)
+			}
+		}
+	}
+	else
+	{
+		if (Game.getSetting(SETTING_SMOOTH_ROTATION))
+		{
+			// Tails' tails
+			if (animationSprite >= 0x05 && animationSprite <= 0x14)
+			{
+				animationSprite = 0x05 + (animationSprite - 0x05) % 4
+				angle = lookupAngleByVector(s16[characterAddress + 0x18], s16[characterAddress + 0x1a])
+
+				flags = 0
+				if (char.flags & char.flag.FACING_LEFT)
+				{
+					flags |= SPRITE_FLAG_FLIP_X
+					angle += 0x80
+				}
+				if (global.inv_gravity)
+				{
+					flags ^= SPRITE_FLAG_FLIP_Y
+					angle = -angle
+				}
+			}
+		}
+
+		key = stringformat(stringformat("%s_tails_0x%02x", getCharacterSpriteKey(CHARACTER_TAILS)), animationSprite)
+		if (!Renderer.hasCustomSprite(key))
+		{
+			key = Renderer.setupCustomCharacterSprite(0x336620, 0x344d74, 0x344bb8, animationSprite, 0x00)
+		}
+	}
+
+	u16 renderQueue = 0xa000 - char.sprite_priority
+	u8 atex = (char.sprite_attributes >> 9) & 0x30
+	if (EXTENDED_CHARACTER_PALETTES)
+		atex = 0x40 + character * 0x20
+
+	if (char.sprite_attributes & sprite_attribute.PRIORITY)
+		flags |= SPRITE_FLAG_PRIO
+
+	if (rotationMode != 0 && global.inv_gravity)
+	{
+		// Correction for inverse gravity
+		angle = 128 - angle
+		flags ^= SPRITE_FLAG_FLIP_X
+	}
+
+	if (ROMDataAnalyser.isEnabled())
+	{
+		string category = (variant < 2) ? getCharacterSpriteKey(character) : stringformat("%s_tails", getCharacterSpriteKey(CHARACTER_TAILS))
+		Renderer.extractCustomSprite(key, category, animationSprite, atex)
+	}
+
+	// Render character
+	if (asSmallGhost)
+	{
+		Renderer.drawCustomSprite(key, px, py, atex, flags | SPRITE_FLAG_PRIO, 0xa800, angle, 0xc0ffffff, 0x8000)
+	}
+	else
+	{
+		Renderer.drawCustomSprite(key, px, py, atex, flags, renderQueue, angle, 255)
+	}
+
+	bool useAfterImages
+	if (isPlayer1)
+	{
+		if ((super.active == 0xff) || (super.active.tails == 0xff))
+		{
+			useAfterImages = true
+		}
+		else
+		{
+			if (Game.getSetting(SETTING_SPEEDUP_AFTERIMGS))
+			{
+				useAfterImages = ((u8[characterAddress + 0x2b] & char.bonus.SPEED_UP) != 0)
+			}
+		}
+	}
+
+	if (useAfterImages)
+	{
+		// Additional offset for Sonic charging a Super Peel-Out (either Hyper Sonic or with Speed Shoes)
+		s16 afterImagesOffsetX = 0
+		if (char.character == CHARACTER_SONIC && char.spindash == 0x80)
+		{
+			afterImagesOffsetX = (char.groundspeed >> 7) * ((char.flags & char.flag.FACING_LEFT) ? 1 : -1)
+		}
+
+		for (s8 i = 3; i > 0; --i)
+		{
+			A1 = 0xffffe500 + u8(posbackup.offset.player1 - (i * 8 + 4))
+			s16 px0 = u16[A1] - camera.foreground.x.u16 + (i * afterImagesOffsetX / 4)
+			s16 py0 = u16[A1+2] - camera.foreground.y.u16
+			if (level.vertical_wrap == 0xff00)	// Consider vertical level wrap
+				py0 &= level.height.bitmask
+
+			Renderer.setSpriteTagWithPosition(characterAddress + 0x10 + i, px0, py0)
+			Renderer.drawCustomSprite(key, px0, py0, atex, flags, renderQueue - i, angle, 192 - i * 32)
+		}
+	}
+	// Prevent emulator-like rendering
+	return true
+}
+
+//# address-hook(0x012600) end(0x01286c)
+//# translated(0x012a2a) end(0x012a6e)
+function void UpdateSonicAnimation()
+{
+    if !(u8[0xffffe654] == 0 && global.characters == 4)
+    {
+        base.UpdateSonicAnimation()
+        return
+    }
+
+	if (char.state != char.state.former)
+	{
+		char.state.former = char.state
+		char.animation.frame = 0
+		char.animation.timer = 0
+		char.flags &= ~char.flag.PUSHING
+	}
+        if (char.state == 0x36 || char.state == 0x31) //Spring Twirl and Falling
+		{
+			base.UpdateSonicAnimation()
+			return
+		}
+
+	A1 = 0x012aa6
+	A1 = tableLookupAddress(A1, char.state * 2)
+	D0.u8 = u8[A1]
+
+	// D0.u8 is either:
+	//  - 0xff when running
+	//  - 0xfe when rolling (on ground or in air)
+	//  - between 0x00 and 0x7f in other cases (like standing, balancing, spring-jumping, getting hurt, etc.)
+	if (D0.u8 < 0x80)
+	{
+		updateSonicAnimationStanding()
+	}
+	else if (D0.u8 == 0xff)
+	{
+		updateSonicAnimationRunning()
+	}
+	else // if (D0.u8 == 0xfe)
+	{
+		updateSonicAnimationRolling()
+	}
+}
+
+function string getCharacterSpriteKey(u8 character, bool isSuperActive)
+{
+
+ReimuEyesGlow = (((ReimuPalette == 0x0b) && !Mods.isModActive("ReimuRemadeAlternatePalettes")) || ((ReimuPalette == 0x0c) && Mods.isModActive("ReimuRemadeAlternatePalettes"))) ? true : false
+
+    if !((character == CHARACTER_SONIC) || !(u8[0xffffe654] == 0)) || !(global.characters == 4)
+        return base.getCharacterSpriteKey(character, isSuperActive)
+    else if (ReimuEyesGlow) && ((ReimuPalette == 0x0b) && !Mods.isModActive("ReimuRemadeAlternatePalettes"))
+        return "character_reimu_joker"
+    else if (ReimuEyesGlow)
+        return "character_reimu_eyes"
+    else
+    	return "character_reimu"
+}
+
+function string getCharacterSelectSpriteKey(u8 character)
+{
+
+u16 characters = (objA0.update_address == 0x00d30c) ? dataselect.nosave_characters : u16[A0 + 0x34]
+ReimuEyesGlow = (((ReimuPalette == 0x0b) && !Mods.isModActive("ReimuRemadeAlternatePalettes")) || ((ReimuPalette == 0x0c) && Mods.isModActive("ReimuRemadeAlternatePalettes"))) ? true : false
+
+    if ReimuEyesGlow && (ReimuPalette == 0x0b) && !Mods.isModActive("ReimuRemadeAlternatePalettes") && (characters == 5 || System.getGlobalVariableValueByName("actselect.character.backup") == 5) && (character == CHARACTER_SONIC)
+        return "charselect_reimujoker"
+    else if ReimuEyesGlow && (ReimuPalette == 0x0c) && (characters == 5 || System.getGlobalVariableValueByName("actselect.character.backup") == 5) && (character == CHARACTER_SONIC)
+        return "charselect_reimueyesglow"
+    else if (characters == 5 || System.getGlobalVariableValueByName("actselect.character.backup") == 5) && (character == CHARACTER_SONIC)
+        return "charselect_reimu"
+    else
+        return base.getCharacterSelectSpriteKey(character)
+}
+
+function u64 Monitor.getIconSpriteKey(u8 type)
+{
+	if (type == 0x01) && (isMainCharacter(CHARACTER_SONIC)) && (u8[0xffffe654] == 0)
+	{
+		if (ReimuNitoriCompat) && (Mods.isModActive("Nitori Kawashiro In 3 A.I.R."))
+            return "icon_ReimuNitori"
+        else if (ReimuRandomiser == 4)
+            return "icon_ReimuFrisk"
+        else
+	    	return "icon_ReimuFrisk"
+	}
+return base.Monitor.getIconSpriteKey(type)
+}
+
+// Renderhooking
+function bool Standalone.onWriteToSpriteTable(s16 px, s16 py, u16 renderQueue)
+{
+	bool prioFlag = (objA0.sprite_attributes & 0x8000) != 0
+
+	if ((objA0.update_address == 0x02dd98) || (objA0.update_address == 0x02ea50 || objA0.update_address == 0x02ec1e)) && !Mods.isModActive("Megamix v5.0a Hud") && (global.characters == 4)
+	{
+		if (objA0.animation.sprite == 0x13) && (u8[0xffffe654] == 0)
+		{
+			Renderer.drawCustomSprite("ActClear_Reimu", px + 30, py + 0x8, 0x40, SPRITE_FLAG_PRIO, renderQueue)
+			return true
+		}
+	}
+	if (objA0.update_address == 0x0837b2) && (global.characters == 4)
+	{
+		if (objA0.animation.sprite == 0x00) && (u8[0xffffe654] == 0)
+		{
+		    string Key = (ReimuEyesGlow) ? (((ReimuPalette == 0x0b) && !Mods.isModActive("ReimuRemadeAlternatePalettes")) ? "ReimuJoker" : "ReimuGlow") : "Reimu"
+			Renderer.drawCustomSprite(stringformat("Signpost_%s", Key), px, py, 0x40, prioFlag ? SPRITE_FLAG_PRIO : 0, renderQueue+1)
+			return true
+		}
+	}
+return base.Standalone.onWriteToSpriteTable(px, py, renderQueue)
+}

@@ -1,0 +1,176 @@
+// Make character selectable
+// Known issue: going from an ES to a base character places you on Sonic Alone. Not a major issue but still worth mentioning
+
+//# address-hook(0x00d6d0) end(0x00d70a)
+function void fn00d6d0()
+{
+	// Character selection
+	u8 character = D0.u8
+	if (u16[0xffffb04a + 0x30] == 0)
+	{
+		u8 maxCharacterSelection = 4
+	#if STANDALONE
+		// Knuckles & Tails
+		if (Game.isSecretUnlocked(SECRET_KNUX_AND_TAILS))
+		{
+			maxCharacterSelection = 5
+		}
+	#endif
+
+		if (control.pad1.pressed & CONTROL_UP) && !objA0.animation.timer
+		{
+		#if EXTRA_CHARACTERS_UNLIMITED
+			if (character == maxCharacterSelection)
+			{
+				objA0.animation.timer = 0x01
+				base.fn00d6d0()
+				objA0.animation.timer -= 1
+				return
+			}
+			else
+			{
+		#endif
+				character = (character < maxCharacterSelection) ? (character + 1) : CHARS_SONIC_AND_TAILS
+				playSound(SFX_CLICK)
+				if (character == 4) && !(Game.isSecretUnlocked(SECRET_KNUX_AND_TAILS))
+					character = 5
+		#if EXTRA_CHARACTERS_UNLIMITED
+			}
+		#endif
+		}
+		else if (control.pad1.pressed & CONTROL_DOWN) && !objA0.animation.timer
+		{
+		#if EXTRA_CHARACTERS_UNLIMITED
+			if !(character > CHARS_SONIC_AND_TAILS)
+			{
+				base.fn00d6d0()
+				return
+			}
+			else
+			{
+		#endif
+				character = (character > CHARS_SONIC_AND_TAILS) ? (character - 1) : maxCharacterSelection
+				playSound(SFX_CLICK)
+				if (character == 4) && !(Game.isSecretUnlocked(SECRET_KNUX_AND_TAILS))
+					character = 3
+		#if EXTRA_CHARACTERS_UNLIMITED
+			}
+		#endif
+		}
+		else
+		{
+			base.fn00d6d0()
+		}
+	}
+	D0 = character
+}
+
+
+// Render character, or they'll be a random sprite from the Data Select
+
+function bool Standalone.onWriteToSpriteTable(s16 px, s16 py, u16 renderQueue)
+{
+	if (objA0.update_address == 0x00d30c || objA0.update_address == 0x00d42c)
+	{
+		u16 characters = (objA0.update_address == 0x00d30c) ? dataselect.nosave_characters : u16[A0 + 0x34]
+
+		if ((characters == 4) && !Game.isSecretUnlocked(SECRET_KNUX_AND_TAILS)) || (characters == 5 && Game.isSecretUnlocked(SECRET_KNUX_AND_TAILS)) // Character selection AFTER Knuckles & Tails
+		{
+			Renderer.drawCustomSprite(getCharacterSelectSpriteKey(CHARACTER_SONIC), px, py-20, 0x40, SPRITE_FLAG_PRIO | SPRITE_FLAG_FLIP_X, renderQueue)
+			objA0.animation.sprite = 0
+		}
+	}
+return base.Standalone.onWriteToSpriteTable(px, py, renderQueue)
+}
+
+//# address-hook(0x0067b6) end(0x0067ec)
+function void SetGlobalCharacters()
+{
+	if u8[0xffffe654]
+	{
+		base.SetGlobalCharacters()
+		return
+	}
+
+	if (global.game_mode != 0x88 && competition_mode.active == 0)
+	{
+	#if STANDALONE
+		// Handle Knuckles & Tails
+		useKnucklesAndTails = (levelselect.characters == CHARS_KNUCKLES_AND_TAILS)
+		global.characters = (levelselect.characters < CHARS_KNUCKLES_AND_TAILS) ? levelselect.characters : levelselect.characters - 1
+		global.characters = min(global.characters, 4)
+
+		//global.characters values 4 and onwards aren't used by the base game
+	#endif
+	} //Rest of these are fallbacks
+	else if (global.zone == 0x07)	// MHZ
+	{
+		global.characters = CHARS_KNUCKLES_ALONE
+	}
+	else if (global.lock_on_state == 0)
+	{
+		global.characters = CHARS_SONIC_AND_TAILS
+	}
+	else
+	{
+		global.characters = CHARS_SONIC_ALONE
+	}
+}
+
+// Fix to prevent signpost from causing a major visual error when it stops spinning, but only for anybody beyond Knux & Tails char selection
+
+//# address-hook(0x0838c2) end(0x08390c)
+function void fn0838c2()
+{
+	if (global.characters < 4) || u8[0xffffe654]
+	{
+		base.fn0838c2()
+		return
+	}
+
+	if (objA0.flags38 & 0x01)
+	{
+		Object.AnimationProgressByLocalA1()
+		--objA0.countdown_value
+		if (objA0.countdown_value >= 0)
+			return
+
+		objA0.base_state = 0x06
+		u8[0xfffffabe] = 0xff
+		objA0.velocity.x = 0
+		objA0.velocity.y = 0
+		objA0.animation.sprite = u8[0x08390e + 1]
+		player2.control_override = 0xff
+	}
+	else
+	{
+		// Touched a monitor
+		objA0.base_state = 0x02
+		objA0.state = 0x20
+		objA0.velocity.y = -0x200
+	}
+}
+
+function u8 getMainCharacter()
+{
+	if (global.characters == 4)
+		return CHARACTER_SONIC // Reimu is a Sonic base
+	else
+		return base.getMainCharacter()
+}
+
+function u8 getSecondCharacter()
+{
+	if (global.characters == 4)
+		return 0xff // No partner
+	else
+		return base.getSecondCharacter()
+}
+
+function string getCharacterLivesIcon(u8 character)
+{
+	if (global.characters == 4)
+		return "hud_lives_icon_reimu"
+	else
+		return base.getCharacterLivesIcon(character)
+}
