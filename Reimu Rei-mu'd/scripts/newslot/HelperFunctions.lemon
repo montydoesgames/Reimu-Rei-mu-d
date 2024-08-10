@@ -1,0 +1,245 @@
+function u8 getMainCharacter()
+{
+	if (global.characters == 6)
+		return CHARACTER_SONIC
+	else
+		return base.getMainCharacter()
+}
+
+function u8 getSecondCharacter()
+{
+	if (global.characters == 6)
+		return 0xff
+	else
+		return base.getSecondCharacter()
+}
+
+// Unedited base game functions that should be changed in order to properly render things. More of these can be found in scripts/standalone/rendering/render_character.lemon at line 397
+
+function string getCharacterContinueIcon(u8 character)
+{
+	// example, change to your own slot
+	// Special handling for active extra character
+	if global.characters == 6
+		return "continue_icon_char4"
+	
+	 // Call the base function
+	return base.getCharacterContinueIcon(character)
+}
+
+function u8 MISC.getEndposePaletteLine(u8 character)
+{
+	if character == 6
+		return 4 //by default the palette is just the default in-game palette for your character.
+	//NOTE: counting starts from 0, so 4 ACTUALLY is line 5. you can see palette lines by pressing alt + M with dev mode enabled.
+}
+
+function u64 ESS_getcharname(u8 chars)
+{
+	u8 slotnum = chars - 1
+	if chars >= 5
+		return stringformat("Char%d", slotnum)
+		//default to char slot as the name, as there is a function to accomodate for this
+	else
+		return base.ESS_getcharname(chars)
+}
+
+function u64 ESS_getCharLifeIcon(u64 name)
+{
+	if (name == "Char6") //replace with Char(yourslotnumber)
+		return "ESS_Life_reimu"
+		//replace with return "yourlifeicon"
+	return base.ESS_getCharLifeIcon(name)
+}
+
+function u64 ESS_getCharContIcon(u64 name)
+{
+	if (name == "Char4") //replace with Char(yourslotnumber)
+		return "ESS_Cont_reimu"
+		//replace with return "yourconticon"
+	return base.ESS_getCharContIcon(name)
+}
+
+function u64 ESS_getCharSpr(u8 character)
+{
+	if (character == 7)
+		return "ESS_Char_reimu"
+
+	return base.ESS_getCharSpr(character)
+}
+
+//Checking for char names and act select sprites for the act select (Contributed by AtomicRay)
+function string MISC.GetCharName(u8 character)
+{
+	u8 slotnum = (global.game_mode == 0x2c) ? character : (character - 1)
+	if slotnum == 6 //replace with your char
+		return "Reimu" //name
+		
+	return base.MISC.GetCharName(character)
+}
+
+function string MISC.GetActSelSprite(u8 character)
+{
+	u8 slotnum = (global.game_mode == 0x2c) ? character : (character - 1)
+	if slotnum == 6 //replace with your char
+		return "charselect_reimu" //sprite key
+		
+	return base.MISC.GetActSelSprite(character)
+}
+
+function bool MISC.RenderPartner(u8 character) //renders partner in act select
+{
+	u8 slotnum = character - 1
+	if slotnum == 6
+		return false
+	return base.MISC.RenderPartner(character)
+}
+
+function void MISC.drawLifeContSprite(s16 px, s16 py, u16 renderQueue, u8 slotnum)
+{
+	if (slotnum == 6) // Character selection AFTER Knuckles & Tails, sets new icon sprites
+	{
+		u8 key = "dataSel_lifeContinue_reimu" //replace with your sprite
+		Renderer.drawCustomSprite(key, px - 18, py + 0x08, 0x80, SPRITE_FLAG_PRIO, renderQueue)
+	}
+base.MISC.drawLifeContSprite(px, py, renderQueue, slotnum)
+}
+
+function void MISC.drawCharSprite(s16 px, s16 py, u16 renderQueue, u8 slotnum)
+{
+	if (slotnum == 6)
+	{
+		string key = "charselect_reimu"
+		Renderer.drawCustomSprite(key, px, py, 0x80, SPRITE_FLAG_PRIO, renderQueue)
+	}
+
+base.MISC.drawCharSprite(px, py, renderQueue, slotnum)
+}
+
+// render clear portraits in data select (contributed by nabbup)
+// note: i don't know the extent of which this works so if it doesn't work with your MISC character i don't know what to tell you lol.
+
+function string MISC.getClearPortrait(u8 ending, u8 slotnum)
+{
+	// 0: incomplete, 1: without emeralds, 2: all chaos emeralds, 3: all super emeralds
+
+	if (slotnum != 6 || ending == 0)
+		return base.MISC.getClearPortrait(ending, slotnum)
+
+	string key
+
+	if (ending == 1)
+		key = "dataSel_savePortrait_char6"
+	else if (ending == 2)
+		key = "dataSel_savePortrait_superchar6"
+	else if (ending == 3)
+		key = "dataSel_savePortrait_clear_char6"
+	if (Renderer.hasCustomSprite(key))
+		return key
+	return false
+}
+
+//What zones do you want your character to access?
+function u8 MISC.getAllowedZones(u8 slotnum)
+{
+    // add exceptions for your individual character like this:
+    // if (slotnum == 6)
+    //    return 0x0d
+	// 
+	// for reference:
+	// 0x0d - Sonic zones (includes doomsday)
+	// 0x0c - Tails zones (excludes doomsday)
+	// 0x0b - Knux zones (ends at ssz)
+	//
+    // return base.MISC.getAllowedZones(slotnum)
+    if (slotnum == 6)
+	{
+		return 0x0d
+	}
+	return base.MISC.getAllowedZones(slotnum)
+}
+
+//determines if AI tails should spawn in levels for transitions e.g. mhz (this doesn't occur in knux's mhz or cnz)
+//this can be useful to edit if your character has a custom method of entering the stage, like a custom intro.
+//for most cases this should be true, unless your char uses knuckles' zones.
+function bool SpawnAITails(u8 slotnum)
+{
+	if slotnum == 6
+		return true //true means tails carries you into cnz and mhz. false means you just fall in.
+	else
+		return base.SpawnAITails(slotnum)
+}
+
+//chooses big pilot
+function void MISC.getPilot(u8 slotnum)
+{
+	if slotnum != 6 //replace with your char
+	{
+		base.MISC.getPilot(slotnum)
+		return
+	}
+
+	// alt sonic (knuckles version)
+	fn05eb9e()
+}
+
+//chooses small pilot
+function u8 MISC.getSmallPilot(u8 slotnum)
+{
+	if slotnum != 6 //replace with your char
+		return base.MISC.getSmallPilot(slotnum)
+
+	//use numbers to determine which pilot
+	return 3
+	// 1 - tails
+	// 2 - sonic
+	// 3 - sonic (knuckles' version)
+}
+
+//determines your minichar when riding the ending tornado
+function string MISC.getMiniChar(u8 slotnum)
+{
+	if slotnum != 6 //replace with your slot
+		return base.MISC.getMiniChar(slotnum)
+
+	return "MiniChar6" //replace with your slot
+}
+
+//s3c sound test/level select compatibility
+function bool LevelSelect.innerUpdate()
+{
+	u8 slotnum = levelselect.characters - 1
+	if Mods.isModActive("Sonic 3 Complete Level Select+")
+	{
+	if (slotnum == 6) //replace with your slot number
+	{
+		Renderer.drawCustomSprite("s3c_char6", getScreenExtend() + 255, 115, 0x00, 0, 0x2000) //replace with your sprites
+	}
+	}
+	return base.LevelSelect.innerUpdate()
+}
+
+#if EXTRA_CHARACTERS_UNLIMITED
+//this is for the ESU act select names
+function string ExtraChar.Menu.actselect.items.menuitems.getNames(u8 character)
+{
+	u8 slotnum = character - 1
+	if (slotnum == 6) //replace with your slot and name
+		return "Reimu"
+	else
+		return base.ExtraChar.Menu.actselect.items.menuitems.getNames(character)
+}
+
+// This allows your character's icon to be rendered as the "leader" icon for the ESU act select.
+function void ExtraChar.Menu.actselect.items.characterlist.drawleader(s16 px, s16 py, u16 renderQueue)
+{
+	u8 slotnum = actselect.character.backup - 1
+	if (slotnum == 6) //replace with your slot
+	{
+		//draw the character's sprites
+		py -= 0x02
+		Renderer.drawSprite(MISC.GetActSelSprite(actselect.character.backup), px, py, 0xb1, 0x00, renderQueue)
+	}
+	base.ExtraChar.Menu.actselect.items.characterlist.drawleader( px, py, renderQueue)
+}
+#endif

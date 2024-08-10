@@ -1,0 +1,1202 @@
+//add this define to prevent errors showing up for version below latest test build. (contributed by nabbup)
+#if GAMEAPP < 0x24060180
+    define u8 BlendMode.OPAQUE = 0
+#endif
+
+//Added define for preprocessor check to allow compat with other mods without any one specific MISC mod needing to be active. (contributed by Nabbup)
+#define MISC_ACTIVE
+
+//Valid and Highest valid char checks. (Contributed by AtomicRay)
+function bool isValidChar(u8 characters) //Determine what values are valid
+{
+	u8 slotnum = (global.game_mode == 0x2c) ? characters : (characters - 1)
+	if (Renderer.hasCustomSprite(stringformat("dataSel_char%d", slotnum))) //to determine, make sure you character has a data select image with the correct slot number. REMEMBER: counting starts at 4!
+		return true
+		//technically you don't even need to use this sprite. you just need to HAVE a sprite named this.
+		
+	//All characters below knuckles & tails are valid
+	if (characters <= 3 && !Game.isSecretUnlocked(SECRET_KNUX_AND_TAILS)) || (Game.isSecretUnlocked(SECRET_KNUX_AND_TAILS) && characters <= 4)
+		return true
+	else
+		return false
+}
+
+function u8 getHighestValidChar() //checks for the highest possible character
+{
+	for (u8 char = 0xff; char > 0x00; --char)
+	{
+		if isValidChar(char)
+			return char
+	}
+	
+	// Fallback value
+	return 0x00
+}
+
+//# address-hook(0x00d6d0) end(0x00d70a)
+function void fn00d6d0()
+{
+	//loads the ES version if it's enabled
+	#if EXTRA_CHARACTERS_UNLIMITED
+		ESCompatDataSel()
+		return
+	#endif
+
+	// Character selection
+	u8 character = D0.u8
+	u8 maxCharacterSelection = 255
+	
+	if (u16[0xffffb04a + 0x30] == 0)
+	{
+
+		if (control.pad1.pressed & CONTROL_UP) && !objA0.animation.timer
+		{
+				character = (character < maxCharacterSelection) ? (character + 1) : CHARS_SONIC_AND_TAILS
+				while !(isValidChar(character))
+					character = (character < maxCharacterSelection) ? (character + 1) : CHARS_SONIC_AND_TAILS
+				playSound(SFX_CLICK)
+				if (character == 4) && !(Game.isSecretUnlocked(SECRET_KNUX_AND_TAILS)) //prevent loading knuckles & tails when not unlocked
+					character = 5
+		}
+		else if (control.pad1.pressed & CONTROL_DOWN) && !objA0.animation.timer
+		{
+				character = (character > CHARS_SONIC_AND_TAILS) ? (character - 1) : maxCharacterSelection
+				while !(isValidChar(character))
+					character = (character > CHARS_SONIC_AND_TAILS) ? (character - 1) : maxCharacterSelection
+				playSound(SFX_CLICK)
+				if (character == 4) && !(Game.isSecretUnlocked(SECRET_KNUX_AND_TAILS)) //prevent loading knuckles & tails when not unlocked
+					character = 3
+		}
+		else
+		{
+			base.fn00d6d0()
+		}
+	}
+	D0 = character
+}
+
+// ES version of the function
+//# address-hook(0x00d6d0) end(0x00d70a)
+function void ESCompatDataSel()
+{
+	#if EXTRA_CHARACTERS_UNLIMITED
+	u8 character = D0.u8
+	u8 maxCharacterSelection = 255
+	
+	if (u16[0xffffb07a] == 0x00)
+	{
+
+		if (control.pad1.pressed & CONTROL_UP)
+		{
+			// Reset "Blink" animation
+			u8[A0 + 0x3c] = 0x00
+			u8[A0 + 0x3d] = 0x00
+			
+			// While the slot is not Knuckles (and Tails), navigate through the default slots
+			if (character != maxCharacterSelection && objA0.animation.timer == 0x00)
+			{
+				character = (character < maxCharacterSelection) ? (character + 0x01) : 0x00
+				while !(isValidChar(character))
+					{
+					if character > getHighestValidChar()
+						{
+						if ExtraChar.getLowestSlot() > CHARACTER_UNSET
+							{
+							objA0.animation.timer = ExtraChar.getLowestSlot()
+							character = CHARS_SONIC_ALONE
+							}
+						else
+							{
+							objA0.animation.timer = CHARACTER_UNSET
+							character = CHARS_SONIC_AND_TAILS
+							}
+						}
+					else
+						character = (character < maxCharacterSelection) ? (character + 1) : CHARS_SONIC_AND_TAILS
+					}
+			}
+			// Choose extra character after (actually in) Knuckles (and Tails) slot
+			else
+			{
+				// Determine the next available character to select
+				// As long as the extra variable is great than the highest slot
+				if (objA0.animation.timer < ExtraChar.getHighestSlot())
+				{
+					for (u8 i = CHARACTER_SLOT1; i <= CHARACTER_SLOT255; ++i)
+					{
+						if (Renderer.hasCustomSprite(stringformat("dataSel_slot%d", i)) && i > objA0.animation.timer)
+						{
+							objA0.animation.timer = i
+							character = CHARS_SONIC_ALONE
+							break
+						}
+
+						if (i == CHARACTER_SLOT255)
+							break
+					}
+				}
+				// If the extra variable is equal to the highest slot, then reset the variables and go to the next default slot
+				else
+				{
+					objA0.animation.timer = CHARACTER_UNSET
+					character = CHARS_SONIC_AND_TAILS
+				}
+			}
+			
+			// Play "beep" sound
+			playSound(0x5b)
+		}
+		else if (control.pad1.pressed & CONTROL_DOWN)
+		{
+			// Reset "Blink" animation
+			u8[A0 + 0x3c] = 0x00
+			u8[A0 + 0x3d] = 0x00
+			
+			// Set extra variables to highest available slot after Sonic and Tails slot
+			if (character == CHARS_SONIC_AND_TAILS)
+			{
+				if ExtraChar.getLowestSlot() > CHARACTER_UNSET
+					{
+					objA0.animation.timer = ExtraChar.getHighestSlot()
+					character = CHARS_SONIC_ALONE
+					}
+				else
+					{
+					objA0.animation.timer = CHARACTER_UNSET
+					character = getHighestValidChar()
+					}
+			}
+			// Choose extra character after (actually in) Knuckles (and Tails) slot
+			else
+			{
+				// When the extra variable is equal to the lowest slot; Go to Knuckles (and Tails) slot instead of extra character
+				if (objA0.animation.timer == ExtraChar.getLowestSlot() && ExtraChar.getLowestSlot() > CHARACTER_UNSET)
+				{
+					objA0.animation.timer = CHARACTER_UNSET
+					character = getHighestValidChar()
+				}
+				// Otherwise, go to the next extra character in descending order
+				else
+				{
+					// Determine the next available character to select
+					// As long as the extra variable is great than the lowest slot
+					if (objA0.animation.timer > ExtraChar.getLowestSlot())
+					{
+						for (u8 i = CHARACTER_SLOT255; i >= CHARACTER_SLOT1; --i)
+						{
+							if (Renderer.hasCustomSprite(stringformat("dataSel_slot%d", i)) && i < objA0.animation.timer)
+							{
+								objA0.animation.timer = i
+								break
+							}
+
+							if (i == CHARACTER_SLOT1)
+								break
+						}
+					}
+					// If the extra variable is equal to the lowest slot, then reset the variables and go to the next default slot
+					else
+					{
+						objA0.animation.timer = CHARACTER_UNSET
+						character = (character > 0x00) ? (character - 0x01) : maxCharacterSelection
+						while !(isValidChar(character))
+							character = (character > CHARS_SONIC_AND_TAILS) ? (character - 1) : maxCharacterSelection
+					}
+				}
+			}
+			
+			// Play "beep" sound
+			playSound(0x5b)
+		}
+	}
+	
+	D0 = character
+	global.xtrachar = objA0.animation.timer
+	//debugLog(stringformat("%d, %d, %d", objA0.value3b, u8[A0 + 0x3c], u8[A0 + 0x3d]))
+	#endif
+}
+
+// render clear portraits in data select (contributed by nabbup)
+// note: i don't know the extent of which this works so if it doesn't work with your MISC character i don't know what to tell you lol.
+
+function bool isClearPortrait()
+{
+	return (objA0.compound.sprite2.animation.sprite >= 0x18 && objA0.compound.sprite2.animation.sprite <= 0x23)
+}
+
+//# address-hook(0x00d96a) end(0x00d9f2)
+function void fn00d96a()
+{
+	u8 slotnum = max(s16(u16[A0 + 0x34] - 1), 0) // Character selection AFTER Knuckles & Tails
+	if (isClearPortrait() && s16[0xffffb04a + 0x2e] == 0) // && slotnum > 3)
+	{
+		s16 px = (objA0.position.x.u16 - 0xa8) + 40
+		string key = MISC.getClearPortrait(objA0.value3b, slotnum)
+		if (Renderer.hasCustomSprite(key))
+			Renderer.drawCustomSprite(key, px, 136, 0x00, SPRITE_FLAG_PRIO, 0x9feb)
+	}
+	base.fn00d96a()
+}
+
+function bool Standalone.onDrawVdpSpriteCompound(s16 px, s16 py, u8 size, u16 index, u16 renderQueue, u8 spriteCounter)
+{
+	u8 slotnum = max(s16(u16[A0 + 0x34] - 1), 0) // Character selection AFTER Knuckles & Tails
+	if (objA0.update_address == 0x00d42c && isClearPortrait() && !(index == 0x83BD || index == 0x93BD)) // && slotnum > 3)
+	{
+		if (MISC.getClearPortrait(objA0.value3b, slotnum))
+			return true
+	}
+	return base.Standalone.onDrawVdpSpriteCompound(px, py, size, index, renderQueue, spriteCounter)
+}
+
+// Render character, or they'll be a random sprite from the Data Select
+
+function bool Standalone.onWriteToSpriteTable(s16 px, s16 py, u16 renderQueue)
+{
+	u16 characters = (objA0.update_address == 0x00d30c) ? dataselect.nosave_characters : u16[A0 + 0x34]
+	u8 slotnum = characters - 1 // Character selection AFTER Knuckles & Tails
+	bool prioFlag = (objA0.sprite_attributes & 0x8000) != 0x00
+
+	// Render character in data select, or they'll be a random sprite from the Data Select
+	if (objA0.update_address == 0x00d30c || objA0.update_address == 0x00d42c)
+	{
+		if slotnum > 3
+		{
+		MISC.drawCharSprite(px, py, renderQueue, slotnum)
+		objA0.animation.sprite = 0
+		}
+	}
+
+	//Other Renderhooking stuff (Contributed by AtomicRay)
+	// - Continue and lives icons:
+	// (Assistance provided by nabbup)
+	if (objA0.update_address == 0x00d42c)
+	{
+		bool saveGameSlotUsed = objA0.compound.sprite1.animation.sprite != 0x0f
+		if (saveGameSlotUsed)
+		{
+			if slotnum > 3
+			{
+			MISC.drawLifeContSprite(px, py, renderQueue, slotnum)
+			}
+		}
+		
+	}
+	
+	// Bluesphere game menu;
+	// - Character bumpers:
+	// (Contributed by AtomicRay)
+	if (objA0.update_address == 0x04d6b8)
+	{
+		if levelselect.characters > 3 //checks for if character is over the base 3
+		{
+			u8 flags = ((objA0.render_flags & 0x01) ? SPRITE_FLAG_FLIP_X : 0x00) | ((objA0.render_flags & 0x02) ? SPRITE_FLAG_FLIP_Y : 0x00) | ((objA0.sprite_attributes & 0x8000) ? SPRITE_FLAG_PRIO : 0x00)
+			
+			Renderer.drawSprite(stringformat("bump_char%d_0x%02x", levelselect.characters, objA0.animation.sprite), px, py, 0x00, flags, renderQueue) //Renders if there's a corresponding sprite for the slot in the files
+			return true
+		}
+	}
+
+	if (objA0.update_address == 0x0837b2) && global.characters > 3 //signpost fixes
+	{
+		if (objA0.animation.sprite == 0x00)
+		{		
+			u64 key = 0
+			u8 atex = 0x40 + 0x20 * getMainCharacter()
+			u8 flags = prioFlag ? SPRITE_FLAG_PRIO : 0
+			//Depending on who the loaded MISC is a base of, will replace respective signpost.
+			u8 character
+			if getMainCharacter() == CHARACTER_SONIC
+				character = (objA0.animation.sprite == 0) ? global.characters : (objA0.animation.sprite == 1) ? CHARACTER_TAILS : (objA0.animation.sprite == 2) ? CHARACTER_KNUCKLES : 0xff
+			else if getMainCharacter() == CHARACTER_TAILS
+				character = (objA0.animation.sprite == 0) ? CHARACTER_SONIC : (objA0.animation.sprite == 1) ? global.characters : (objA0.animation.sprite == 2) ? CHARACTER_KNUCKLES : 0xff
+			else if getMainCharacter() == CHARACTER_KNUCKLES
+				character = (objA0.animation.sprite == 0) ? CHARACTER_SONIC : (objA0.animation.sprite == 1) ? CHARACTER_TAILS : (objA0.animation.sprite == 2) ? global.characters : 0xff
+
+			if (character != 0xff)
+				key = getCharacterSignpostSpriteKey(character) //note that you will need to edit this function to accomodate for more signposts
+			Renderer.drawCustomSprite(key, px, py, atex, prioFlag ? SPRITE_FLAG_PRIO : 0, renderQueue)
+			return true
+		}           
+	}
+
+	// Fix Big character sprites not showing up for characters above value 3, this is caused by character defaulting to CHARACTER_SONIC which registers as char 1 in the game, loading incorrect palettes and endpose.
+	if (objA0.update_address == 0x05e18a || objA0.update_address == 0x05f4e4)
+	{
+		u64 key = 0
+		u8 atex = (objA0.update_address == 0x05e18a) ? 0x20 : 0
+		u8 flags = prioFlag ? SPRITE_FLAG_PRIO : 0
+
+		if global.characters >= 4
+			{
+				//key = getCharacterEndPoseSpriteKey(global.characters, true)
+				//if you don't want super sprites, you can technically just ignore the SuperActive variable in your version of the getCharacterEndPoseSpriteKey function
+
+				if (objA0.animation.sprite == 0x02) //super
+				{
+					key = getCharacterEndPoseSpriteKey(global.characters, true)
+				}
+				else // if (objA0.animation.sprite <= 0x01) //not super
+				{
+					key = getCharacterEndPoseSpriteKey(global.characters, false)
+				}
+
+				//make sure to edit base function for getCharacterEndPoseSpriteKey() to include your custom sprites. should add example function for ease of use
+			}
+		if (Renderer.hasCustomSprite(key))
+		{
+			// Check if there's also a custom palette
+			string paletteKey = getCharacterEndPosePaletteKey(global.characters)
+			//same thing here if there's a custom palette for the endpose. otherwise, you can just do what amy galore did, and default to the base pal.
+			if (System.hasExternalPaletteData(paletteKey, MISC.getEndposePaletteLine(global.characters)))
+			{
+				atex = 0x40 + getMainCharacter() * 0x20
+			}
+			Renderer.drawCustomSprite(key, px, py, atex, flags, renderQueue)
+			return true
+		}
+	}
+
+	//small and micro plane
+	//small plane and micro outside
+	//0x05d86a is contemporarily the small tornado flying right and the micro one flying left!
+	if (objA0.update_address == 0x05d86a)
+	{
+		//if flying left use the micro character
+		if (char.render_flags & 0x01) && slotnum > 3
+		{
+			u8 flags = prioFlag ? SPRITE_FLAG_PRIO : 0x00
+			u8 flags2 = ((objA0.render_flags & 0x01) ? SPRITE_FLAG_FLIP_X : 0) | ((objA0.render_flags & 0x02) ? SPRITE_FLAG_FLIP_Y : 0) | ((objA0.sprite_attributes & 0x8000) ? SPRITE_FLAG_PRIO : 0)
+			u64 key = MISC.getMiniChar(global.characters) //use global.characters when in-game
+
+
+			SpriteHandle MiniMicro = Renderer.addSpriteHandle(key, px, py, renderQueue+1) //sprite handles my beloved
+			MiniMicro.setPaletteOffset(0x40)
+			MiniMicro.setFlags(flags2)
+			Renderer.drawCustomSprite(key, px, py, 0, flags, 0) // The pilot and the plane, make it nobody
+			Renderer.addSpriteMask(px - 11, py - 28, 23, 20, renderQueue + 1, 8000)
+		}
+		else
+		{ //this would be the small tornado, so render normally.
+			return base.Standalone.onWriteToSpriteTable(px, py, renderQueue)
+		}
+	}
+
+	//this is only if you want a custom pilot (not sonic tails or knux) in the big & small variants, mini variants have a whole different thing.
+	// Character sprites for riding the Tornado in the ending
+	//if (objA0.update_address == 0x05ebb4 || objA0.update_address == 0x05ed18) && global.characters >= 4
+	//{
+	//	u64 key = 0
+	//	u8 atex = 0
+	//	u8 character = isMainCharacter(CHARACTER_SONIC) ? CHARACTER_TAILS : isMainCharacter(CHARACTER_TAILS) ? CHARACTER_SONIC : isSecondCharacter(CHARACTER_TAILS) ? CHARACTER_TAILS : CHARACTER_SONIC
+	//	if (objA0.update_address == 0x05ebb4)
+	//	{
+	//		key = "tails_faketornado_pilot" //Make this whoever you want
+	//	}
+	//	else //if (objA0.update_address == 0x05ed18)
+	//	{
+	//		if (objA0.subtype2c == 0) //same thing is done here
+	//			key = "tails_faketornado_pilot_small" //make this whoever you want
+	//	}
+	//
+	//	atex = 0x40 + character * 0x20
+	//	if (Renderer.hasCustomSprite(key))
+	//	{
+	//		Renderer.drawCustomSprite(key, px, py, atex, (objA0.render_flags & render_flag.FLIP_X) | (prioFlag ? SPRITE_FLAG_PRIO : 0), renderQueue)
+	//		return true
+	//	}
+	//}
+
+return base.Standalone.onWriteToSpriteTable(px, py, renderQueue)
+}
+
+//# address-hook(0x05eb32) end(0x05eb66)
+function void fn05eb32() //set the character in the tornado for custom characters (it can be whoever you want)
+{
+	if (global.characters < 4) //if you want another character except for tails as the pilot, you can change the parameters to just be if global.characters is NOT your slot number.
+	{
+		base.fn05eb32()
+		return
+	}
+
+    objA0.update_address = 0x05ebb4
+
+    A1 = 0xffff0000 + u16[A0 + 0x46]
+    objA0.sprite_priority = objA1.sprite_priority
+    objA0.box_size.x = 0x20
+    objA0.box_size.y = 0x20
+    if (objA1.render_flags & render_flag.WORLD)
+    {
+        objA0.render_flags |= render_flag.WORLD
+    }
+
+    // Select character in Tornado by custom char number
+    // you can only select between Tails, sonic, and knuckles' sonic variant. if you want to add a custom pilot, look at Standalone.onWriteToSpriteTable().
+    if (global.characters > 3)
+    {
+        MISC.getPilot(global.characters) //you can set your own parameters in this function
+    }
+}
+
+// Small characters on Tornado
+
+//# address-hook(0x05ecb4) end(0x05ed0c)
+function void fn05ecb4()
+{
+	//this accounts for all slots
+	if global.characters < 4
+		{
+			base.fn05ecb4()
+			return
+		}
+
+	setupObjectAttributesFull(0x0600e6)
+
+	A1 = 0xffff0000 + u16[A0 + 0x46]
+	u8[A0 + 0x0a] = (u8[A0 + 0x0a] & ~0x80) | (u8[A1 + 0x0a] & 0x80)
+	if ((objA1.render_flags & render_flag.WORLD) == 0)
+	{
+		objA0.render_flags &= ~render_flag.WORLD
+	}
+
+	objA0.update_address = 0x05ed18
+	
+	//this is the only edited part
+	u16 offset = MISC.getSmallPilot(global.characters) //use this to set values in helperfunctions
+	// 1 - tails
+	// 2 - sonic
+	// 3 - sonic (knuckles' version)
+	// if you want knuckles or another character as the pilot, you'll need to look at Standalone.onWriteToSpriteTable().
+	
+	if (isMainCharacter(CHARACTER_KNUCKLES) && (outro.ending_type >= 0))
+	{
+		++offset	// Knuckles with Master Emerald
+	}
+	offset *= 2	// From here, first byte is the plane pilot, second byte is character standing on the wings
+	if (objA0.subtype2c != 0)
+	{
+		++offset	// Get offset of sprite for character on wings
+	}
+	objA0.animation.sprite = u8[0x05ed0e + offset]
+
+#if STANDALONE
+	if (isMainCharacter(CHARACTER_KNUCKLES))
+	{
+		// Set correct colors for Knuckles, and for Sonic in the Tornado
+		// TODO: This is not using custom palettes, so there's no palette effect for Hyper Knuckles
+		u16[0xfffffc04] = 0x064e
+		u16[0xfffffc06] = 0x020c
+		u16[0xfffffc08] = 0x0206
+		if (global.zone_act == 0x0d01)
+			copyMemory(0xfffffc20, 0x0a8a3c, 0x20)
+
+		if (objA0.subtype2c == 0 && isSecondCharacter(CHARACTER_TAILS))
+		{
+			// Special handling for Knuckles & Tails game: Put Tails into the Tornado
+			objA0.animation.sprite = 0x0c
+		}
+	}
+#endif
+}
+
+//this renders the lives & conts icons before the renderhook.
+//# address-hook(0x00c97a) end(0x00ca12)
+function void fn00c97a()
+{
+	A2 = 0x00da8a
+	A3 = 0xffffb128
+	D7.u16 = 0xd220
+	A0 = 0xffffe6ac
+	for (u8 slot = 0; slot < 8; ++slot)
+	{
+		bool saveGameSlotUsed = (u8[A0] & 0x80) == 0
+		u16 characters = u16[A3 + 0x34]
+		if (!saveGameSlotUsed)
+		{
+			characters = CHARS_SONIC_AND_TAILS
+		}
+		else if (characters == CHARS_SONIC_AND_TAILS)	// Handle Sonic & Tails - show Sonic's icons
+		{
+			characters = CHARS_SONIC_ALONE
+		}
+	#if STANDALONE
+		else
+		{
+			if (characters == 4 && Game.isSecretUnlocked(SECRET_KNUX_AND_TAILS)) //fix for knuckles & tails' icons
+				characters = min(characters, 3)		// Handle Knuckles & Tails - show Knuckles' icons
+		}
+	#endif
+
+		if (characters <= 3) // get rid of the icons if using a MISC character (because it starts writing junk after K&T)
+		{
+			// Draw icons for lives & continues
+			A1 = A2 + characters * 32
+			D0 = VDPHelper.getDirectVRAMWriteCode(D7.u16)
+			D1 = 2
+			D2 = 4
+			fn001506()
+		}
+
+		// Draw lives & continues numbers
+		if (!saveGameSlotUsed)
+		{
+			A1 = 0x00db08
+			D0 = VDPHelper.getDirectVRAMWriteCode(D7.u16 + 6)
+			D1 = 1
+			D2 = 4
+			fn001506()
+		}
+		else
+		{
+			// Render lives digits
+			D0.u8 = u8[A3 + 0x3e]	// Get lives data from save file
+			fn00ca14()
+
+			D0 = VDPHelper.getDirectVRAMWriteCode(D7.u16 + 6)
+			D1 = 1
+			D2 = 1
+			fn001506()
+
+			// Render continues digits
+			D0.u8 = u8[A3 + 0x3f]	// Get continues data from save file
+			fn00ca14()
+
+			D0 = VDPHelper.getDirectVRAMWriteCode(D7.u16 + 0x306)
+			D1 = 1
+			D2 = 1
+			fn001506()
+		}
+
+		D7.u16 += 0x1a
+		A0 += 10
+		A3 += 0x4a
+	}
+}
+
+//# address-hook(0x0067b6) end(0x0067ec)
+function void SetGlobalCharacters()
+{
+	if u8[0xffffe654]
+	{
+		base.SetGlobalCharacters()
+		return
+	}
+
+	if (global.game_mode != 0x88 && competition_mode.active == 0)
+	{
+	#if STANDALONE
+		// Handle Knuckles & Tails
+		useKnucklesAndTails = (levelselect.characters == CHARS_KNUCKLES_AND_TAILS)
+		global.characters = (levelselect.characters < CHARS_KNUCKLES_AND_TAILS) ? levelselect.characters : levelselect.characters - 1
+		global.characters = min(global.characters, 255) //change this to 255 so that it supports values over 4
+
+		//global.characters values 4 and onwards aren't used by the base game
+	#endif
+	} //Rest of these are fallbacks
+	else if (global.zone == 0x07)	// MHZ
+	{
+		global.characters = CHARS_KNUCKLES_ALONE
+	}
+	else if (global.lock_on_state == 0)
+	{
+		global.characters = CHARS_SONIC_AND_TAILS
+	}
+	else
+	{
+		global.characters = CHARS_SONIC_ALONE
+	}
+}
+
+//fix for tails not spawning in cnz and mhz. this just changes the parameters for spawning AI tails and returns base if not on either level, or global.characters is below a certain value.
+//# address-hook(0x0067ee) end(0x0069b6)
+function void fn0067ee()
+{
+	if global.characters <= 3 || SpawnAITails(global.characters) == false || MISC.getAllowedZones(global.characters) == 0x0b //you can also set your own parameters, for example if your character has a custom level intro, just make it return base if your slotnum is active
+	{
+		base.fn0067ee()
+		return
+	}
+
+	u32[0xffffb094] = addressof(ResetDynamicObjectList)
+	InitializeGameCharacters()
+	RestoreShield()
+	if (checkpoint.number != 0 || global.stage_type != 0)
+		return
+
+	A1 = 0xffffb000
+	A2 = 0xffffb04a
+	if (global.zone_act == 0x0300)
+	{
+		// Carnival Night Zone
+		//spawn ai tails
+		u32[0xffffb04a] = addressof(Character.BaseUpdate.Tails)
+		u16[0xffffb04a + 0x10] = u16[0xffffb000 + 0x10]
+		u16[0xffffb04a + 0x14] = u16[0xffffb000 + 0x14]
+		tails.ai_routine = 0
+	}
+	else if (global.zone_act == 0x0700)
+	{
+		// Mushroom Hill Zone
+		if (global.lock_on_state == 0)
+		{
+			//spawn ai tails
+			u32[0xffffb04a] = addressof(Character.BaseUpdate.Tails)
+			u16[0xffffb04a + 0x10] = u16[0xffffb000 + 0x10]
+			u16[0xffffb04a + 0x14] = u16[0xffffb000 + 0x14]
+			tails.ai_routine = 0
+		}
+	}
+	else
+	{
+		base.fn0067ee()
+	}
+}
+
+// Fix to prevent signpost from causing a major visual error when it stops spinning, but only for anybody beyond Knux & Tails char selection
+
+//# address-hook(0x0838c2) end(0x08390c)
+function void fn0838c2()
+{
+	if (global.characters < 4) || u8[0xffffe654]
+	{
+		base.fn0838c2()
+		return
+	}
+
+	if (objA0.flags38 & 0x01)
+	{
+		Object.AnimationProgressByLocalA1()
+		--objA0.countdown_value
+		if (objA0.countdown_value >= 0)
+			return
+
+		objA0.base_state = 0x06
+		u8[0xfffffabe] = 0xff
+		objA0.velocity.x = 0
+		objA0.velocity.y = 0
+		objA0.animation.sprite = u8[0x08390e + 1] //Set it to Sonic's signpost
+		player2.control_override = 0xff
+	}
+	else
+	{
+		// Touched a monitor
+		objA0.base_state = 0x02
+		objA0.state = 0x20
+		objA0.velocity.y = -0x200
+	}
+}
+
+//Unedited function. Spawns the characters.
+
+//global.characters won't change, so you can use this to choose a base character like ES, but use global.characters as a check instead of global.xtrachar
+
+//# address-hook(0x006a76) end(0x006bd6)
+function void InitializeGameCharacters()
+{
+	if u8[0xffffe654]
+	{
+		base.InitializeGameCharacters()
+		return
+	}
+
+	// One of the bonus stages?
+	if (global.zone_act >= 0x1300 && global.zone_act < 0x1600)
+	{
+		hud.dirty.timer = 0
+
+		if (global.zone_act == 0x1400)
+		{
+			u32[0xffffb172] = 0x049eee
+			u16[0xffffb172 + 0x10] = 0x78
+			u16[0xffffb172 + 0x14] = 0xf30
+			ring_counter = checkpoint.rings
+			extra_lives_granted = checkpoint.lives_granted
+			hud.dirty.rings = 1
+		}
+		else if (global.zone == 0x15)
+		{
+			u8[0xffffe408] = 0
+			u16[0xffffe406] = 0
+			u32[0xffffb000] = 0x04b958
+			fn04b6aa()
+			u8[0xffffee30] = 0xff
+			return
+		}
+	}
+
+	if (competition_mode.active)
+	{
+		D0.u8 = competition_mode.character.player1
+		fn006bd8()
+
+		u32[0xffffb000] = D1
+		u8[0xffffb000 + 0x38] = competition_mode.character.player1
+		u16[0xffffb04a + 0x10] = u16[0xffffb000 + 0x10]
+		u16[0xffffb04a + 0x14] = u16[0xffffb000 + 0x14]
+		u32[0xffffcc54] = 0x018f86
+
+		if (competition_mode.multiplay)
+		{
+			D0.u8 = competition_mode.character.player2
+			fn006bd8()
+
+			u32[0xffffb04a] = D1
+			u8[0xffffb04a + 0x38] = competition_mode.character.player2
+			u32[0xffffcc9e] = 0x018f86
+		}
+
+		fn006bf6()
+		return
+	}
+
+	bool spawnSecondPlayerTails = false
+	if (isMainCharacter(CHARACTER_SONIC))
+	{
+		// Spawn Sonic
+		u32[0xffffb000] = addressof(Character.BaseUpdate.Sonic)
+		u32[0xffffcc54] = 0x018b3e
+		u32[0xffffcce8] = addressof(InstaShield.Init)
+		u16[0xffffcce8 + 0x42] = 0xb000
+
+		// Also spawn Tails if needed
+		spawnSecondPlayerTails = isSecondCharacter(CHARACTER_TAILS)
+	}
+	else if (isMainCharacter(CHARACTER_TAILS))
+	{
+		// Spawn Tails
+		u32[0xffffb000] = addressof(Character.BaseUpdate.Tails)
+		u32[0xffffcc9e] = 0x018b3e
+		u16[0xffffb000 + 0x14] += 4
+		tails.ai_routine = 0
+	}
+	else if (isMainCharacter(CHARACTER_KNUCKLES))
+	{
+		// Spawn Knuckles
+		u32[0xffffb000] = addressof(Character.BaseUpdate.Knuckles)
+		u32[0xffffcc54] = 0x018b3e
+
+	#if STANDALONE
+		// Also spawn Tails if needed -- except for Knuckles' final fight in SSZ
+		spawnSecondPlayerTails = (isSecondCharacter(CHARACTER_TAILS) && global.zone_act != 0x0a01)
+	#endif
+	}
+	else
+		assert(false, "Unsupported character selection")
+
+	if (spawnSecondPlayerTails)
+	{
+		u32[0xffffb04a] = addressof(Character.BaseUpdate.Tails)
+		u16[0xffffb04a + 0x10] = u16[0xffffb000 + 0x10] - 0x20
+		u16[0xffffb04a + 0x14] = u16[0xffffb000 + 0x14] + 4
+		u32[0xffffcc9e] = 0x018b3e
+		tails.ai_routine = 0
+	}
+}
+
+//kinda breaks ESU stuff from level select, but... eh- you can select em from act select anyway.
+//# address-hook(0x007e64) end(0x007f1e)
+//# translated(0x007f46) end(0x007f60)
+function void fn007e64()
+{
+	bool skipPart = false
+	if ((control.pad1.pressed & (CONTROL_UP | CONTROL_DOWN)) == 0)
+	{
+		--u16[0xffffff80]
+		skipPart = (s16[0xffffff80] >= 0)
+	}
+
+	if (!skipPart)
+	{
+		u16[0xffffff80] = 11
+		if (control.pad1.state & CONTROL_UP)
+		{
+			--levelselect.selection
+			if (s16(levelselect.selection) < 0)
+				levelselect.selection = 0x20
+		}
+		if (control.pad1.state & CONTROL_DOWN)
+		{
+			++levelselect.selection
+			if (levelselect.selection > 0x20)
+				levelselect.selection = 0
+		}
+		return
+	}
+
+	if (levelselect.selection == 0x20)
+	{
+		// Sound test
+		if (control.pad1.pressed & CONTROL_LEFT)
+		{
+			if (levelselect.soundtest > 0)
+				--levelselect.soundtest
+		}
+		if (control.pad1.pressed & CONTROL_RIGHT)
+		{
+			levelselect.soundtest = (levelselect.soundtest + 1) & 0xff
+		}
+		if (control.pad1.pressed & CONTROL_A)
+		{
+			levelselect.soundtest = (levelselect.soundtest + 0x10) & 0xff
+		}
+
+		if (control.pad1.pressed & CONTROL_C)
+		{
+			playMusic(levelselect.soundtest)
+		}
+		if (control.pad1.pressed & CONTROL_B)
+		{
+			playMusic(0xe3)
+		}
+	}
+	else
+	{
+		if (control.pad1.pressed & (CONTROL_LEFT | CONTROL_RIGHT))
+		{
+			levelselect.selection = u8[0x007f22 + levelselect.selection]
+		}
+
+		if (control.pad1.pressed & CONTROL_C)
+		{
+			u8 maxCharacterSelection = 255
+
+			levelselect.characters += 1
+			
+			while !(isValidChar(levelselect.characters))
+				levelselect.characters = (levelselect.characters < maxCharacterSelection) ? (levelselect.characters + 1) : CHARS_SONIC_AND_TAILS
+				
+		}
+	}
+}
+
+//Loading new chars into blue spheres without breaking compat with ESU (Contributed by AtomicRay)
+global bool NewCharBluspheres
+
+//Load new characters in blue spheres
+//# address-hook(0x04d6b8) end(0x04d7a0)
+function void fn04d6b8()
+{
+#if EXTRA_CHARACTERS_UNLIMITED
+	if (Input.buttonPressed(BUTTON_X) && (objA0.render_flags & render_flag.FLIP_X)) || bluespheres.xtrachar == true
+		{
+		base.fn04d6b8()
+		return
+		}
+#endif
+
+#if STANDALONE
+	// Do the following only once in total, i.e. only for the right object
+	if (objA0.render_flags & render_flag.FLIP_X)
+	{
+		if (levelselect.characters == CHARS_TAILS_ALONE)
+		{
+			// Manipulate the palette for Tails
+			BlueSphereGame.applyTailsPalette(0xfffffc00)
+		}
+
+		// Render the BG logo in the right colors again
+		Renderer.drawCustomSprite("sklogo", getScreenWidth() / 2, 40 - scrolloffset.y.planeB, 0x00, 0, 0x1700)
+	}
+#endif
+
+	if (bluespheregame.fully_unlocked != 0)
+	{
+		A1 = u32[A0 + 0x30]
+		D0 = bluespheregame.menu_selection * 4
+		D2.u16 = u16[A1 + D0.u16] + getScreenExtend()
+		D3.u16 = u16[A1 + D0.u16 + 2]
+
+		// Update velocity-x
+		bool skipPart = false
+		if (D2.u16 == objA0.position.x.u16)
+		{
+			D0.u16 = objA0.velocity.x + 0x80
+			if (D0.u16 <= 0x0100)
+			{
+				D1 = 0
+				objA0.velocity.x = D1.u16
+				skipPart = true
+			}
+		}
+
+		if (!skipPart)
+		{
+			D1.u16 = 0x40
+			if (D2.s16 < s16(objA0.position.x.u16))
+			{
+				D1.s16 = -D1.s16
+				if (objA0.velocity.x >= 0)
+				{
+					D1.u16 *= 4
+				}
+			}
+			else
+			{
+				if (objA0.velocity.x < 0)
+				{
+					D1.u16 *= 4
+				}
+			}
+		}
+		objA0.velocity.x += D1.u16
+
+		// Update velocity-y
+		skipPart = false
+		if (D3.u16 == objA0.position.y.u16)
+		{
+			D0.u16 = objA0.velocity.y + 0x0100
+			if (D0.u16 <= 0x0200)
+			{
+				D1 = 0
+				objA0.velocity.y = D1.u16
+				skipPart = true
+			}
+		}
+
+		if (!skipPart)
+		{
+			D1.u16 = 0x80
+			if (D3.s16 < s16(objA0.position.y.u16))
+			{
+				D1.s16 = -D1.s16
+				if (objA0.velocity.y >= 0)
+				{
+					D1.u16 *= 4
+				}
+			}
+			else
+			{
+				if (objA0.velocity.y < 0)
+				{
+					D1.u16 *= 4
+				}
+			}
+		}
+		objA0.velocity.y += D1.u16
+
+		UpdateMovementStraightSimple()
+	}
+
+	--objA0.animation.timer
+	if (s8(objA0.animation.timer) < 0)
+	{
+		objA0.animation.timer = 2
+		++objA0.animation.sprite
+		objA0.animation.sprite &= 0x07
+	}
+
+#if STANDALONE
+	if (control.pad1.pressed & CONTROL_B || Input.buttonPressed(BUTTON_BACK))
+	{
+		if ((objA0.render_flags & render_flag.FLIP_X) == 0)		// Only consider first of the two objects
+		{
+			if (bluespheregame.menu_selection == 1)
+			{
+				// Back to the main menu
+				playSound(0xad)
+
+				u32 backupA0 = A0
+				FadeOutScreenBlocking()
+				A0 = backupA0
+
+				Game.returnToMainMenu()
+				yieldExecution()
+				
+				//Revert variable to false
+				NewCharBluspheres = false
+			}
+			else if (bluespheregame.menu_selection == 2)
+			{
+				fn04d488()
+			}
+		}
+		DrawObject()
+		return
+	}
+#endif
+
+	if (control.pad1.pressed & CONTROL_ABC)
+	{
+	
+		D0.u16 = objA0.sprite_attributes
+		if (D0.u16 == (sprite_attribute.PRIORITY | (BlueSphereGame.Bumpers.targetInVRAM >> 5))) && NewCharBluspheres == false
+		{
+			levelselect.characters = CHARS_SONIC_ALONE
+			objA0.sprite_attributes = (sprite_attribute.PRIORITY | sprite_attribute.PALETTE.LINE3 | (BlueSphereGame.Bumpers.targetInVRAM >> 5))
+		}
+		else
+	#if STANDALONE
+		if (D0.u16 == (sprite_attribute.PRIORITY | sprite_attribute.PALETTE.LINE3 | (BlueSphereGame.Bumpers.targetInVRAM >> 5)))
+		{
+			levelselect.characters = CHARS_TAILS_ALONE
+			objA0.sprite_attributes = (sprite_attribute.PRIORITY | sprite_attribute.PALETTE.LINE2 | (BlueSphereGame.Bumpers.targetInVRAM >> 5))
+		}
+		else if (D0.u16 == (sprite_attribute.PRIORITY | sprite_attribute.PALETTE.LINE2 | (BlueSphereGame.Bumpers.targetInVRAM >> 5)))
+	#endif
+		{
+			levelselect.characters = CHARS_KNUCKLES_ALONE
+			objA0.sprite_attributes = (sprite_attribute.PRIORITY | (BlueSphereGame.Bumpers.targetInVRAM >> 5))
+			NewCharBluspheres = true
+		}
+		else if NewCharBluspheres == true //only if is set to the new characters
+		{
+			if levelselect.characters == getHighestValidChar()
+				{
+				NewCharBluspheres = false
+				levelselect.characters = CHARS_SONIC_ALONE
+				objA0.sprite_attributes = (sprite_attribute.PRIORITY | sprite_attribute.PALETTE.LINE3 | (BlueSphereGame.Bumpers.targetInVRAM >> 5))
+				//return to sonic slot
+				}
+			else
+			{
+				for (u8 i = 4; i <= 255; ++i) //go through all valid slots
+				{
+					if (isValidChar(i) && i > levelselect.characters) //check for next valid slot
+					{
+						waitForNextFrame() //wait a frame, otherwise it will go up by 2 slots? for some reason???
+						UpdateGameObjects() //update game objects (copyright symbol) for the singular frame it isn't.
+						levelselect.characters = i //set correct value
+						break //end loop
+					}
+
+					if (i >= 255)
+						break //end loop if it's the max character (failsafe, in case the above thing fails)
+				}
+			}
+		}
+	}
+
+	DrawObject()
+}
+
+//@ Function taken from sonic3air_dev/scripts/menus/dataselect.lemon
+function bool fn00d458()
+{
+	u8 slotnum = max(s16(u16[A0 + 0x34] - 1), 0)
+    bool completedSlot = u8[A1] != 0x00 && u8[A1] != 0x80
+    bool controlCheck = (control.pad1.pressed & CONTROL_DOWN) || (control.pad1.pressed & CONTROL_UP)
+    
+	if (control.pad1.pressed & CONTROL_LEFT) || (control.pad1.pressed & CONTROL_RIGHT)
+		u8[A0 + 0x8a] = 0x00 //THAT ACTUALLY WORKED???
+    if (slotnum > 3 && isValidChar(u16[A0 + 0x34]) && completedSlot && controlCheck) //Replace slotnum == 4 with YOUR slot
+    {
+		u32 backupA0 = A0
+		D6 = MISC.getAllowedZones(slotnum)
+        if (u8[A0 + 0x8a] != 0x01)
+        {
+            u16[A0 + 0x36] = MISC.getAllowedZones(slotnum) + 1 //for some strange reason, it always loads the zone RIGHT before the highest valid zone, so.... +1, I guess. it works!
+            u8[A0 + 0x8a] = 0x01
+        }
+        
+        // Zone select
+        D1.u16 = u16[A0 + 0x36]
+        if (control.pad1.pressed & CONTROL_DOWN)
+        {
+            playSound(0x5b)
+            --D1.u16
+            
+            if (D1.s16 < 0x00)
+                D1.u16 = D6.u16
+        }
+        else if (control.pad1.pressed & CONTROL_UP)
+        {
+            playSound(0x5b)
+            ++D1.u16
+            
+            if (D1.u16 > D6.u16)
+                D1 = 0x00
+        }
+        u16[A0 + 0x36] = D1.u16
+        waitForNextFrame()
+		DataSelect.drawCustomPlanes()
+
+		A0 = backupA0
+        
+        // Return the Base function
+        return base.fn00d458()
+    }
+    else 
+    {
+        // Return the Base function
+        return base.fn00d458()
+    }
+}
+
+//Load knux's unique acts if getAllowedZones is knux's zones
+//# address-hook(0x00da4e) end(0x00da6c)
+function void fn00da4e()
+{
+	u8 slotnum = max(s16(u16[A0 + 0x34] - 1), 0)
+	if slotnum < 4
+		{
+		base.fn00da4e()
+		return
+		}
+	
+	if (u16[A0 + 0x34] >= CHARS_KNUCKLES_ALONE && D0.u8 == 0x0b && MISC.getAllowedZones(slotnum) == 0x0b)
+	{
+		// Choose Knuckles' version of Sky Sanctuary
+		D0.u16 = 0x0a01
+	}
+	else
+	{
+		// Lookup correct zone and act to start
+		D0.u16 = u16[0x00da6e + (D0.u8 & 0x0f) * 2]
+	}
+}
+
+function bool Standalone.onDrawVdpSpriteCompound(s16 px, s16 py, u8 size, u16 index, u16 renderQueue, u8 spriteCounter)
+{
+	if (index == 0x83BD || index == 0x93BD) // arrows in data select, draw them above everything else
+	{
+		Renderer.drawVdpSprite(px, py, size, index, 0x9ffb)
+		return true
+	}
+	return base.Standalone.onDrawVdpSpriteCompound(px, py, size, index, renderQueue, spriteCounter)
+}
+
+//# address-hook(0x05f26c) end(0x05f2dc)
+function void fn05f26c() //add the new character. to my knowledge, no way to base this, so.
+{
+	if u8[0xffffe654] || global.characters < 4
+	{
+		base.fn05f26c()
+	}
+
+	setupObjectAttributesFull(0x060154)
+
+	// "Sonic the Hedgehog 3"
+	objA0.update_address = 0x05f1f6
+	if (objA0.subtype2c != 0)
+	{
+		objA0.update_address = 0x05f2ea
+		objA0.countdown_value = 0x04af
+		u8[0xfffffab8] &= ~0x04
+	}
+
+	A1 = 0x05f2e2
+	fn05ff1c()
+
+	copyMemory(0xfffffca0, 0x060ada, 0x20)
+
+	// Attach trademark
+	if (allocDynamicObjectStd())
+	{
+		objA1.update_address = 0x05f4fa
+		u16[A1 + 0x46] = A0.u16
+		u8[A1 + 0x2c] = 0x04
+	}
+
+	// Attach "& Knuckles"
+	if (allocDynamicObjectStd())
+	{
+		objA1.update_address = 0x05f546
+		u16[A1 + 0x46] = A0.u16
+	}
+
+	// "spawnChildObjects(0x0601f0)" replaced by:
+	spawnChildObject(0x05f3aa, 0x02, -0x35, 0x14)		// Tails in best ending final screen
+	spawnChildObject(0x05f31c, 0x00, -0x20, -0x14)		// Sonic in best ending final screen
+	spawnChildObject(0x05f410, 0x04, 0x40, 0)		// Knuckles in best ending final screen
+	spawnChildObject(0x05f31c, 0x06, 0x18, 0x12)		// custom character in best ending final screen
+}
