@@ -1,6 +1,13 @@
 {
-	"ESS_Char_Sonic":  { "File": "ESS.png", "Rect": "16,1,32,40", "Center": "18,40" },
-	"ESS_Life_Sonic":  { "File": "ESS.png", "Rect": "8,45,16,16", "Center": "8,16" },
-	"ESS_Cont_Sonic":  { "File": "ESS.png", "Rect": "42,44,16,16", "Center": "8,16" },
-	"charselect_reimu":  { "File": "ESS.png", "Rect": "16,1,32,40", "Center": "16,20" },
+	"ESS_Char_reimu":  { "File": "ESS.png", "Rect": "16,1,32,40", "Center": "18,40" },
+	"ESS_Life_reimu":  { "File": "ESS.png", "Rect": "8,45,16,16", "Center": "8,16" },
+	"ESS_Cont_reimu":  { "File": "ESS.png", "Rect": "42,44,16,16", "Center": "8,16" },
+
+	"charselect_reimu":  { "File": "ESS.png", "Rect": "16,1,32,40", "Center": "16,40" },
+	"dataSel_lifeContinue_reimu":  { "File": "dataselicons.png", "Rect": "0,4,26,45", "Center": "0,0" },
+	"dataSel_char6":  { "File": "ESS.png", "Rect": "16,1,32,40", "Center": "16,40" },
+
+	"dataSel_savePortrait_char6":  { "File": "SavePortraits.png", "Rect": "0,0,80,56", "Center": "40,120" },
+	"dataSel_savePortrait_superchar6":  { "File": "SavePortraits.png", "Rect": "0,56,80,56", "Center": "40,120" },
+	"dataSel_savePortrait_clear_char6":  { "File": "SavePortraits.png", "Rect": "0,112,80,56", "Center": "40,120" }
 }
