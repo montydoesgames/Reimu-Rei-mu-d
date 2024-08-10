@@ -1,0 +1,171 @@
+// Here we're replacing the Super Flicky object with the Gohei Stick. Reimu will never be able to use them in normal gameplay so this affects nothing if I change it.
+
+// How it works:
+
+// Imagine Pyra's Blazing End in SSBU, but you charge it. Yeah.
+
+//# address-hook(0x01a19c) end(0x01a1ee)
+function void fn01a19c()
+{
+	if (global.characters != 6)
+	{
+		base.fn01a19c()
+		return
+	}
+
+	objA0.mapping_offset = 0x01a464
+	objA0.render_flags = render_flag.WORLD
+	objA0.sprite_priority = 0x80
+	objA0.box_size.x = 0x30
+	objA0.box_size.y = 0x30
+	objA0.sprite_attributes = (sprite_attribute.PRIORITY | (Char.Player1.targetInVRAM >> 5))
+	objA0.position.x.u16 = u16[0xffffb010]
+	objA0.position.y.u16 = u16[0xffffb014]
+	objA0.velocity.x = 0
+	objA0.velocity.y = 0
+	objA0.base_state = 0x02
+
+	objA0.update_address = 0x01a1f4
+	fn01a1f4()
+}
+
+
+//# address-hook(0x01a1f4) end(0x01a226)
+function void fn01a1f4()
+{
+	if (global.characters != 6)
+	{
+		base.fn01a1f4()
+		return
+	}
+
+	fn01a292()
+
+	// Some rendering shenanigans we don't really need another function for
+
+	if (objA0.base_state == 0x02) // Once you release the stick it shouldn't need to check this
+	{
+		if (u8[0xffffb004] & render_flag.FLIP_X)
+			objA0.render_flags |= render_flag.FLIP_X
+		else
+			objA0.render_flags &= ~render_flag.FLIP_X
+	}
+
+	// Still a chance it's on screen when gravity flips so this is always checked
+	objA0.render_flags &= ~render_flag.FLIP_Y
+	if (global.inv_gravity)
+	{
+		objA0.render_flags |= render_flag.FLIP_Y
+	}
+
+	--objA0.animation.timer
+	if (s8(objA0.animation.timer) < 0)
+	{
+		objA0.animation.timer = 1
+		++objA0.animation.sprite
+		objA0.animation.sprite %= 8
+	}
+
+	DrawObject()
+}
+
+//# address-hook(0x01a292) end(0x01a31c)
+function void fn01a292()
+{
+	if (global.characters != 6)
+	{
+		base.fn01a292()
+		return
+	}
+
+	if objA0.base_state == 0x02
+	{
+		objA0.position.x.u16 = u16[0xffffb010]
+		objA0.position.y.u16 = u16[0xffffb014]
+
+		if !(control.player1.state & CONTROL_ABC)
+			objA0.base_state = 0x04
+		else if (u8[0xffffb02f] != 1)
+			UnloadObject()
+	}
+	else if objA0.base_state == 0x04
+	{
+		objA0.position.x.u16 += (objA0.render_flags & render_flag.FLIP_X) ? -8 : 8
+	}
+
+	if (u8[A0 + 0x30] == 0)
+	{
+		bool goto01a2ac = false
+		if (u8[A0 + 0x32] != 0)
+		{
+			--u8[A0 + 0x32]
+			goto01a2ac = true
+		}
+		else
+		{
+			fn01a3fe()
+			goto01a2ac = (D1.u16 == 0)
+		}
+
+		if (goto01a2ac)
+		{
+			D0.u8 = u8[A0 + 0x34]
+			LookupSinCos()
+			D0.s16 >>= 3
+			D1.s16 >>= 4
+			D2.u16 = u16[0xffffb000 + 0x10]
+			D3.u16 = u16[0xffffb000 + 0x14] - 0x20
+			if (global.inv_gravity)
+				D3.u16 += 0x40
+			D2.u16 += D0.u16
+			D3.u16 += D1.u16
+			return
+		}
+	}
+
+	A1 = 0xffff0000 + objA0.value42
+	D2.u16 = objA1.position.x.u16
+	D3.u16 = objA1.position.y.u16
+	if (objA1.render_flags & render_flag.VISIBLE)
+	{
+		D0.s16 = objA0.position.x.u16 - D2.u16
+		D1.u16 = objA0.position.y.u16 - D3.s16
+		if (D0.s16 >= 0x40 || D1.s16 >= 0x40) || (D0.s16 <= -0x40 || D1.s16 <= -0x40)
+			return
+
+		fn01a31e()
+	}
+
+	u8[A1 + 0x2d] = 0
+	u8[A0 + 0x30] = 0
+	u8[A0 + 0x32] = 0x78
+}
+
+function bool Standalone.onWriteToSpriteTable(s16 px, s16 py, u16 renderQueue)
+{
+	if (objA0.update_address == 0x01a1f4)
+	{
+		if (global.characters == 6) // Reimu
+		{
+			Renderer.drawCustomSprite(stringformat("Reimu_Gohei_%d", objA0.animation.sprite), px, py, 0x40, SPRITE_FLAG_PRIO, renderQueue)
+			return true
+		}
+	}
+
+	return base.Standalone.onWriteToSpriteTable(px, py, renderQueue)
+}
+
+function void SonicPressedJumpInMidAir()
+{
+	if (global.characters != 6)
+	{
+		base.SonicPressedJumpInMidAir()
+		return
+	}
+
+	// Remove control lock
+	char.flags &= ~char.flag.CONTROL_LOCK
+	char.double_jump_state = 1	// Always set this flag; needed for Drop Dash
+
+	u32[0xffffcd7c] = 0x01a19c
+}
