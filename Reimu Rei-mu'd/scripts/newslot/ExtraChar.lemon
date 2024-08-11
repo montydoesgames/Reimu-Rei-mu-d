@@ -1069,59 +1069,6 @@ function void fn04d6b8()
 	DrawObject()
 }
 
-//@ Function taken from sonic3air_dev/scripts/menus/dataselect.lemon
-function bool fn00d458()
-{
-	u8 slotnum = max(s16(u16[A0 + 0x34] - 1), 0)
-    bool completedSlot = u8[A1] != 0x00 && u8[A1] != 0x80
-    bool controlCheck = (control.pad1.pressed & CONTROL_DOWN) || (control.pad1.pressed & CONTROL_UP)
-    
-	if (control.pad1.pressed & CONTROL_LEFT) || (control.pad1.pressed & CONTROL_RIGHT)
-		u8[A0 + 0x8a] = 0x00 //THAT ACTUALLY WORKED???
-    if (slotnum > 3 && isValidChar(u16[A0 + 0x34]) && completedSlot && controlCheck) //Replace slotnum == 4 with YOUR slot
-    {
-		u32 backupA0 = A0
-		D6 = MISC.getAllowedZones(slotnum)
-        if (u8[A0 + 0x8a] != 0x01)
-        {
-            u16[A0 + 0x36] = MISC.getAllowedZones(slotnum) + 1 //for some strange reason, it always loads the zone RIGHT before the highest valid zone, so.... +1, I guess. it works!
-            u8[A0 + 0x8a] = 0x01
-        }
-        
-        // Zone select
-        D1.u16 = u16[A0 + 0x36]
-        if (control.pad1.pressed & CONTROL_DOWN)
-        {
-            playSound(0x5b)
-            --D1.u16
-            
-            if (D1.s16 < 0x00)
-                D1.u16 = D6.u16
-        }
-        else if (control.pad1.pressed & CONTROL_UP)
-        {
-            playSound(0x5b)
-            ++D1.u16
-            
-            if (D1.u16 > D6.u16)
-                D1 = 0x00
-        }
-        u16[A0 + 0x36] = D1.u16
-        waitForNextFrame()
-		DataSelect.drawCustomPlanes()
-
-		A0 = backupA0
-        
-        // Return the Base function
-        return base.fn00d458()
-    }
-    else 
-    {
-        // Return the Base function
-        return base.fn00d458()
-    }
-}
-
 //Load knux's unique acts if getAllowedZones is knux's zones
 //# address-hook(0x00da4e) end(0x00da6c)
 function void fn00da4e()
@@ -1199,4 +1146,21 @@ function void fn05f26c() //add the new character. to my knowledge, no way to bas
 	spawnChildObject(0x05f31c, 0x00, -0x20, -0x14)		// Sonic in best ending final screen
 	spawnChildObject(0x05f410, 0x04, 0x40, 0)		// Knuckles in best ending final screen
 	spawnChildObject(0x05f31c, 0x06, 0x18, 0x12)		// custom character in best ending final screen
+	IsFading = false //reset the check
+}
+
+global bool IsFading
+
+//you probably hate me for doing this, but uh. bite me. :P it looks better, anyway.
+//# address-hook(0x085590) end(0x0855b0)
+//# alias(fn085590) deprecated
+function void FadeOutColorUniform()
+{
+	base.FadeOutColorUniform()
+	
+	if global.zone_act != 0x0d01 //don't do this if you're not in the ending
+		return
+		
+	IsFading = true
+	super.palettefx.state = 0
 }
