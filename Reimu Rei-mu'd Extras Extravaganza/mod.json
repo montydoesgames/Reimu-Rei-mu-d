@@ -1,0 +1,90 @@
+{
+
+"Metadata":
+    {
+    "Name": "Reimu Rei-mu'd: Extras Extravaganza",
+    "Author": "montydoesgames",
+    "Description": "This mod contains all the extras and every non-Alternate Edition palette that has been made for Reimu, as the main mod now works on a \"Cycle\" system for it's included palettes that aims to push newer palettes and bring back fan favourites in a somewhat rotation-esque style per update.",
+    "ModVersion": "1. The release.",
+    "GameVersion": "20.03.22.0",
+    "UniqueID": "ReimuRemadeExtrasExtravaganza",
+	},
+	"OtherMods":
+	{
+		"ReimuRemadeBaseMod":
+		{
+			"DisplayName": "Reimu Rei-mu'd",
+			"IsRequired": "1",
+			"Priority": "Lower"
+		},
+	    "ReimuRemadeAlternatePalettes":
+	    {
+	        "DisplayName": "Reimu Rei-mu'd: Alternate Edition",
+	        "IsRequired": "0",
+	        "Priority": "Higher"
+	    }
+	},
+	"Settings":
+	{
+		"RIEMUTOUHOUREAL":
+		[
+			{
+				"InternalName": "RIEMUDISGUISE",
+				"DisplayName": "Palette",
+				"Category": "Visuals",
+				"Variable": "ReimuPalette",
+				"DefaultValue": "0",
+				"Options":
+				{
+					"0x00": "Reimu (Genesis accurate)",
+					"0x01": "Reimu (PC-98 accurate)",
+					"0x02": "Marisa",
+					"0x03": "Cirno",
+					"0x04": "Flandre",
+					"0x05": "Koishi",
+					"0x06": "Takane",
+					"0x07": "Bad Apple",
+					"0x08": "Remilia",
+					"0x09": "Sakuya",
+					"0x0a": "Suika",
+					"0x0b": "Lookin' Cool",
+					"0x1b": "Bluemu",
+					"0x1c": "Yellowmu",
+					"0x1d": "Greenmu",
+					"0x1e": "The Reimu Resource",
+					"0x1f": "Ze hurter",
+					"0x20": "Ze healer",
+					"0x21": "Hat-wearing Child"
+				}
+			},
+			{
+				"InternalName": "RIEMUSOOPAH",
+				"DisplayName": "Super theme\nto jam to?",
+				"Category": "Audio",
+				"Variable": "ReimuTheme",
+				"DefaultValue": "0",
+				"Options":
+				{
+					"0x00": "Palette-based",
+					"0x01": "Eastern Mystical\nTale of Romance",
+					"0x02": "Beloved Tomboyish Girl\n(16-bit Remix)",
+					"0x03": "Night of Nights\n(16-bit Remix)",
+					"0x04": "Bad Apple!!\n(16-bit Remix)",
+					"0x05": "Sonic 3 AIR\n(Option-based)"
+				}
+			},
+			{
+				"InternalName": "STORYOFRIEMUTALE",
+				"DisplayName": "Easter Eggs",
+				"Category": "Extras",
+				"Variable": "ReimuFellFromTheLight",
+				"DefaultValue": "0",
+				"Options":
+				{
+					"0x00": "On",
+					"0x01": "Off",
+				}
+			}
+        ]
+	}
+}
