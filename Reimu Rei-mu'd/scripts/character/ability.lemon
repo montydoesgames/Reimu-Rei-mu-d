@@ -7,7 +7,7 @@
 //# address-hook(0x01a19c) end(0x01a1ee)
 function void fn01a19c()
 {
-	if (global.characters != 6)
+	if (global.characters != CHARACTER_REIMU)
 	{
 		base.fn01a19c()
 		return
@@ -33,7 +33,7 @@ function void fn01a19c()
 //# address-hook(0x01a1f4) end(0x01a226)
 function void fn01a1f4()
 {
-	if (global.characters != 6)
+	if (global.characters != CHARACTER_REIMU)
 	{
 		base.fn01a1f4()
 		return
@@ -72,7 +72,7 @@ function void fn01a1f4()
 //# address-hook(0x01a292) end(0x01a31c)
 function void fn01a292()
 {
-	if (global.characters != 6)
+	if (global.characters != CHARACTER_REIMU)
 	{
 		base.fn01a292()
 		return
@@ -145,7 +145,7 @@ function bool Standalone.onWriteToSpriteTable(s16 px, s16 py, u16 renderQueue)
 {
 	if (objA0.update_address == 0x01a1f4)
 	{
-		if (global.characters == 6) // Reimu
+		if (global.characters == CHARACTER_REIMU) // Reimu
 		{
 			Renderer.drawCustomSprite(stringformat("Reimu_Gohei_%d", objA0.animation.sprite), px, py, 0x40, SPRITE_FLAG_PRIO, renderQueue)
 			return true
@@ -157,7 +157,7 @@ function bool Standalone.onWriteToSpriteTable(s16 px, s16 py, u16 renderQueue)
 
 function void SonicPressedJumpInMidAir()
 {
-	if (global.characters != 6)
+	if (global.characters != CHARACTER_REIMU)
 	{
 		base.SonicPressedJumpInMidAir()
 		return

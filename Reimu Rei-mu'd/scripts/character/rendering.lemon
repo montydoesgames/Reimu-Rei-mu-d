@@ -5,7 +5,7 @@ function bool Standalone.drawCharacterSprite(u8 character, u8 variant, s16 px, s
 	u8 animationSprite = char.animation.sprite
 
     //ES and Non-Sonic checks, along with sprites that don't need custom rotation
-    if !(character == CHARACTER_SONIC && u8[0xffffe654] == 0 && global.characters == 4) || !((animationSprite >= 0x01 && animationSprite <= 0x30) || (animationSprite >= 0x78 && animationSprite <= 0x7f) || (char.state == char.state.SONIC_DROPDASH))
+    if !(character == CHARACTER_SONIC && u8[0xffffe654] == 0 && global.characters == CHARACTER_REIMU) || !((animationSprite >= 0x01 && animationSprite <= 0x30) || (animationSprite >= 0x78 && animationSprite <= 0x7f) || (char.state == char.state.SONIC_DROPDASH))
     {
         base.Standalone.drawCharacterSprite(character, variant, px, py, asSmallGhost)
         return true
@@ -218,7 +218,7 @@ function bool Standalone.drawCharacterSprite(u8 character, u8 variant, s16 px, s
 			// Special handling for Drop Dash & Super Peel-Out
 			if (animationSpriteEx >= CHAR_ANIMSPRITE_SONIC_PEELOUT)
 			{
-			    string peeltype = (ReimuEyesGlow) ? (((ReimuPalette == 0x0b) && !Mods.isModActive("ReimuRemadeAlternatePalettes")) ? "reimujoker" : "reimuglow") : "reimu"
+			    string peeltype = (ReimuEyesGlow) ? (((ReimuPalette == 0x0b) && !Mods.isModActive("ReimuRemadeAlternatePalettes")) ? "reimujoker" : "reimuglow") : (ReimuPalette == 0x1f || ReimuPalette == 0x20) ? "reimumedic" : "reimu"
 				key = stringformat("%s_peelout_%d", peeltype, animationSpriteEx - CHAR_ANIMSPRITE_SONIC_PEELOUT)
 			}
 			else
@@ -350,7 +350,7 @@ function bool Standalone.drawCharacterSprite(u8 character, u8 variant, s16 px, s
 //# translated(0x012a2a) end(0x012a6e)
 function void UpdateSonicAnimation()
 {
-    if !(u8[0xffffe654] == 0 && global.characters == 4)
+    if !(u8[0xffffe654] == 0 && global.characters == CHARACTER_REIMU)
     {
         base.UpdateSonicAnimation()
         return
@@ -396,8 +396,10 @@ function string getCharacterSpriteKey(u8 character, bool isSuperActive)
 
 ReimuEyesGlow = (((ReimuPalette == 0x0b) && !Mods.isModActive("ReimuRemadeAlternatePalettes")) || ((ReimuPalette == 0x0c) && Mods.isModActive("ReimuRemadeAlternatePalettes"))) ? true : false
 
-    if !((character == CHARACTER_SONIC) || !(u8[0xffffe654] == 0)) || !(global.characters == 4)
+    if !((character == CHARACTER_SONIC) || !(u8[0xffffe654] == 0)) || !(global.characters == CHARACTER_REIMU)
         return base.getCharacterSpriteKey(character, isSuperActive)
+    else if (ReimuPalette == 0x1f || ReimuPalette == 0x20)
+    	return "character_reimu_medic"
     else if (ReimuEyesGlow) && ((ReimuPalette == 0x0b) && !Mods.isModActive("ReimuRemadeAlternatePalettes"))
         return "character_reimu_joker"
     else if (ReimuEyesGlow)
@@ -409,14 +411,8 @@ ReimuEyesGlow = (((ReimuPalette == 0x0b) && !Mods.isModActive("ReimuRemadeAltern
 function string getCharacterSelectSpriteKey(u8 character)
 {
 
-u16 characters = (objA0.update_address == 0x00d30c) ? dataselect.nosave_characters : u16[A0 + 0x34]
-ReimuEyesGlow = (((ReimuPalette == 0x0b) && !Mods.isModActive("ReimuRemadeAlternatePalettes")) || ((ReimuPalette == 0x0c) && Mods.isModActive("ReimuRemadeAlternatePalettes"))) ? true : false
-
-    if ReimuEyesGlow && (ReimuPalette == 0x0b) && !Mods.isModActive("ReimuRemadeAlternatePalettes") && (characters == 5 || System.getGlobalVariableValueByName("actselect.character.backup") == 5) && (character == CHARACTER_SONIC)
-        return "charselect_reimujoker"
-    else if ReimuEyesGlow && (ReimuPalette == 0x0c) && (characters == 5 || System.getGlobalVariableValueByName("actselect.character.backup") == 5) && (character == CHARACTER_SONIC)
-        return "charselect_reimueyesglow"
-    else if (characters == 5 || System.getGlobalVariableValueByName("actselect.character.backup") == 5) && (character == CHARACTER_SONIC)
+u16 characters = ((objA0.update_address == 0x00d30c) ? dataselect.nosave_characters : u16[A0 + 0x34]) - 1
+    if (characters == CHARACTER_REIMU || System.getGlobalVariableValueByName("actselect.character.backup") == CHARACTER_REIMU) && (character == CHARACTER_SONIC)
         return "charselect_reimu"
     else
         return base.getCharacterSelectSpriteKey(character)
@@ -431,32 +427,66 @@ function u64 Monitor.getIconSpriteKey(u8 type)
         else if (ReimuRandomiser == 4)
             return "icon_ReimuFrisk"
         else
-	    	return "icon_ReimuFrisk"
+	    	return "icon_Reimu"
 	}
 return base.Monitor.getIconSpriteKey(type)
 }
 
-// Renderhooking
-function bool Standalone.onWriteToSpriteTable(s16 px, s16 py, u16 renderQueue)
+function string getCharacterBluesphereSpriteKey(u8 character)
 {
-	bool prioFlag = (objA0.sprite_attributes & 0x8000) != 0
+	if global.characters == CHARACTER_REIMU
+		return "bluesphere_reimu"
+	else
+		return base.getCharacterBluesphereSpriteKey(character)
+}
 
-	if ((objA0.update_address == 0x02dd98) || (objA0.update_address == 0x02ea50 || objA0.update_address == 0x02ec1e)) && !Mods.isModActive("Megamix v5.0a Hud") && (global.characters == 4)
+function string getCharacterBonusTextIcon(u8 character)
+{
+	if global.characters == CHARACTER_REIMU
+		return "hud_icon_bonus_reimu"
+	else
+		return base.getCharacterBonusTextIcon(character)
+}
+
+function string getCharacterContinueIcon(u8 character)
+{
+	if global.characters == CHARACTER_REIMU
+		return "continue_icon_reimu"
+	else
+		return base.getCharacterContinueIcon(character)
+}
+
+function string getCharacterResultsNameplate(u8 character)
+{
+	if global.characters == CHARACTER_REIMU
+		return "ActClear_Reimu"
+	else
+		return base.getCharacterResultsNameplate(character)
+}
+
+function string getCharacterSignpostSpriteKey(u8 character)
+{
+	if (global.characters == CHARACTER_REIMU)
 	{
-		if (objA0.animation.sprite == 0x13) && (u8[0xffffe654] == 0)
-		{
-			Renderer.drawCustomSprite("ActClear_Reimu", px + 30, py + 0x8, 0x40, SPRITE_FLAG_PRIO, renderQueue)
-			return true
-		}
+		string Key = (ReimuEyesGlow) ? (((ReimuPalette == 0x0b) && !Mods.isModActive("ReimuRemadeAlternatePalettes")) ? "ReimuJoker" : "ReimuGlow") : "Reimu"
+		return stringformat("Signpost_%s", Key)
 	}
-	if (objA0.update_address == 0x0837b2) && (global.characters == 4)
-	{
-		if (objA0.animation.sprite == 0x00) && (u8[0xffffe654] == 0)
-		{
-		    string Key = (ReimuEyesGlow) ? (((ReimuPalette == 0x0b) && !Mods.isModActive("ReimuRemadeAlternatePalettes")) ? "ReimuJoker" : "ReimuGlow") : "Reimu"
-			Renderer.drawCustomSprite(stringformat("Signpost_%s", Key), px, py, 0x40, prioFlag ? SPRITE_FLAG_PRIO : 0, renderQueue+1)
-			return true
-		}
-	}
-return base.Standalone.onWriteToSpriteTable(px, py, renderQueue)
+	
+	// Call the base function
+	return base.getCharacterSignpostSpriteKey(character)
+}
+
+function string getCharacterEndPoseSpriteKey(u8 character, bool isSuperActive)
+{
+	if global.characters == CHARACTER_REIMU
+		return (isSuperActive) ? "endpose_superreimu" : "endpose_reimu"
+	return  getCharacterEndPoseSpriteKey(character, isSuperActive)
+}
+
+function string getCharacterLivesIcon(u8 character)
+{
+	if (global.characters == CHARACTER_REIMU)
+		return "hud_lives_icon_reimu"
+	else
+		return base.getCharacterLivesIcon(character)
 }
