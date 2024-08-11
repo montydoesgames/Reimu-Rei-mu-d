@@ -1,3 +1,5 @@
 include misc/?
 include character/?
 include newslot/?
+
+constant u8 CHARACTER_REIMU = 6
