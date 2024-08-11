@@ -4,20 +4,14 @@ global u8 ReimuRandomiser
 global u8 ReimuNitoriCompat
 global bool ReimuEyesGlow
 
-/*
-    Hey! Stop peaking at the code!
-
-    Anyways, the code for the palette mods AND the base mod are included in here, for convenience's sake.
-*/
-
 function u64 getCharacterPaletteKey(u8 character)
 {
     if (ReimuRandomiser == 0) && !(ReimuFellFromTheLight)
         ReimuRandomiser = System.rand() % 20
 
-	if (character == CHARACTER_SONIC) && (u8[0xffffe654] == 0) && (global.characters == 4)
+	if (character == CHARACTER_SONIC) && (u8[0xffffe654] == 0) && (global.characters == CHARACTER_REIMU)
 	{
-	    if (ReimuRandomiser == 4)
+	    if (ReimuRandomiser == CHARACTER_REIMU)
 	        return "ReimuFrisk"
         else if (ReimuNitoriCompat) && (Mods.isModActive("Nitori Kawashiro In 3 A.I.R."))
 	        return "NitoriReimu"
@@ -32,7 +26,7 @@ function u64 getCharacterBluespherePaletteKey(u8 character)
     if (ReimuRandomiser == 0) && !(ReimuFellFromTheLight)
         ReimuRandomiser = System.rand() % 20
 
-	if (character == CHARACTER_SONIC) && (u8[0xffffe654] == 0) && (global.characters == 4)
+	if (character == CHARACTER_SONIC) && (u8[0xffffe654] == 0) && (global.characters == CHARACTER_REIMU)
 		return getCharacterPaletteKey(character)
 	else
 		return base.getCharacterBluespherePaletteKey(character)
@@ -40,9 +34,9 @@ function u64 getCharacterBluespherePaletteKey(u8 character)
 
 function u64 getCharacterEndPosePaletteKey(u8 character)
 {
-	if (character == CHARACTER_SONIC) && (u8[0xffffe654] == 0) && (global.characters == 4)
+	if (character == CHARACTER_SONIC) && (u8[0xffffe654] == 0) && (global.characters == CHARACTER_REIMU)
 	{
-	    if (ReimuRandomiser == 4)
+	    if (ReimuRandomiser == CHARACTER_REIMU)
 	        return "StoryofEndertale"
         else if (ReimuNitoriCompat) && (Mods.isModActive("Nitori Kawashiro In 3 A.I.R."))
 	        return "NitoriReimuEnd"
@@ -50,4 +44,86 @@ function u64 getCharacterEndPosePaletteKey(u8 character)
             return stringformat("reimuend_%d", ReimuPalette)
 	}
     return base.getCharacterEndPosePaletteKey(character)
+}
+
+//No white flash for the Medic palettes
+
+function void UpdatePaletteEffects.SuperForm.moddingVersion(u8 characterVersion)
+{
+	if !((global.characters != CHARACTER_REIMU) || !((super.palettefx.state == 0xff) && (char.state != char.state.TRANSFORMING)) || (u8[0xffffe654] > 0)) && (ReimuPalette == 0x1f || ReimuPalette == 0x20)
+	{
+		// Update ongoing palette effect
+		u8 character = getMainCharacter()
+		bool isHyperEffect = (super.active == 0xff || super.active.tails == 0xff)
+		u16 nextFrame = (super.palettefx.frame + 6) % (isHyperEffect ? 108 : 18)
+		u16 blendFactor = super.palettefx.timer * 0x100 / (isHyperEffect ? 0x07 : 0x0f)
+		if (characterVersion == 2)
+		{
+			// Tails
+			nextFrame = (super.palettefx.frame.tails + 6) % (isHyperEffect ? 108 : 18)
+			blendFactor = super.palettefx.timer.tails * 0x100 / (isHyperEffect ? 0x07 : 0x0f)
+		}
+		if (nextFrame % 18 == 0)
+			blendFactor = 0x100 - blendFactor
+		else if (nextFrame % 18 == 12)
+			blendFactor = 0
+
+		for (u8 underwater = 0; underwater < (level.water_present ? 2 : 1); ++underwater)
+		{
+			u32 offset = character * 0x40 + (underwater ? 0x300 : 0)
+			u32 source = 0x802180 + offset
+			u32 dest   = 0x802000 + offset
+
+			// Load modded Super palette
+			u8 line = 5
+
+			zeroMemory(dest, 0x40)
+			u16 numColors = System.loadExternalPaletteData(getCharacterPaletteKey(character), line, 0x800000, 0x20)
+			for (u16 i = 0; i < numColors; ++i)
+			{
+				u32 rgba = u32[0x800000 + i * 4]
+				u16[dest + i * 2] = (rgba & 0xff000000) ? packColorExt(rgba) : 0
+			}
+
+			for (u8 k = 0; k < 0x40; k += 2)
+			{
+				if (u16[dest + k] == 0)
+				{
+					// Use original color as fallback
+					u16[dest + k] = u16[source + k]
+				}
+				else
+				{
+					// Apply flash effect
+					u16[dest + k] = blendColorsPacked(u16[dest + k], 0x0eee, blendFactor)
+				}
+			}
+		}
+
+		if (characterVersion == 2)
+		{
+			// Super/Hyper Tails
+			--super.palettefx.timer.tails
+			if (super.palettefx.timer.tails < 0)
+			{
+				super.palettefx.timer.tails = isHyperEffect ? 0x07 : 0x0f
+				super.palettefx.frame.tails = nextFrame
+			}
+
+			// Also update Sonic's colors, for the flickies
+			if (super.active.tails == 0xff)
+				UpdatePaletteEffects.UpdateSuperSonic.Smoothed(0xff)
+			return
+		}
+		return
+	}
+base.UpdatePaletteEffects.SuperForm.moddingVersion(characterVersion)
+}
+
+function u8 getModdedEndPosePaletteLine(u8 character, bool isHyperEffect)
+{
+	if (character == CHARACTER_SONIC && u8[0xffffe654] == 0) && (global.characters == CHARACTER_REIMU) && (ReimuPalette == 0x1f || ReimuPalette == 0x20)
+		return 1
+	else
+		return base.getModdedEndPosePaletteLine(character, isHyperEffect)
 }

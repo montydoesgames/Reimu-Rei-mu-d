@@ -11,12 +11,18 @@ constant array<string> REIMU_SUPERTHEME =
 
 function void Standalone.playAudio(u8 sfxId)
 {
+	if (!Mods.isModActive("ReimuRemadeExtrasExtravaganza"))
+	{
+		base.Standalone.playAudio(sfxId)
+		return
+	}
+
 ReimuEyesGlow = (((ReimuPalette == 0x0b) && !Mods.isModActive("ReimuRemadeAlternatePalettes")) || ((ReimuPalette == 0x0c) && Mods.isModActive("ReimuRemadeAlternatePalettes"))) ? true : false
-if (sfxId <= 0x32) || (sfxId == 0xf0) && (global.characters == 4)
+if (sfxId <= 0x32) || (sfxId == 0xf0) && (global.characters == CHARACTER_REIMU)
 {
     if (Audio.isPlayingAudio("01_touhou") && (ReimuPalette == 7) && !(Mods.isModActive("ReimuRemadeAlternatePalettes"))) || (Audio.isPlayingAudio("69_undereimu"))
         return
-    else if (ReimuRandomiser == 4) && (u8[0xffffe654] == 0) && (isMainCharacter(CHARACTER_SONIC))
+    else if (ReimuRandomiser == 6) && (u8[0xffffe654] == 0) && (isMainCharacter(CHARACTER_SONIC))
     {
             Audio.playAudio("69_undereimu", AudioContext.CONTEXT_MUSIC)
          return
@@ -49,14 +55,14 @@ if (sfxId <= 0x32) || (sfxId == 0xf0) && (global.characters == 4)
         return
     }
 }
-if !(((sfxId == MUSIC_CTRL_FADEOUT) || (sfxId == MUSIC_CTRL_STOP)) && ((ReimuPalette == 7) || (ReimuRandomiser == 4)) && (global.characters == 4))
+if !(((sfxId == MUSIC_CTRL_FADEOUT) || (sfxId == MUSIC_CTRL_STOP)) && ((ReimuPalette == 7) || (ReimuRandomiser == CHARACTER_REIMU)) && (global.characters == CHARACTER_REIMU))
     base.Standalone.playAudio(sfxId)
 }
 
 
 function u64 Standalone.getModdedSoundKey(u64 soundKey, u8 sfxId, u8 soundRegType)
 {
-    if (Audio.isPlayingAudio("01_touhou") && (ReimuPalette == 7)) || (Audio.isPlayingAudio("69_undereimu")) && (global.characters == 4)
+    if (Audio.isPlayingAudio("01_touhou") && (ReimuPalette == 7)) || (Audio.isPlayingAudio("69_undereimu")) && (global.characters == CHARACTER_REIMU)
         return 0
     else
         return base.Standalone.getModdedSoundKey(soundKey, sfxId, soundRegType)

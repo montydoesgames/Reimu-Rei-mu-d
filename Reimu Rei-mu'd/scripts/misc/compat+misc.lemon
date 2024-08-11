@@ -1,16 +1,16 @@
 function string ExtraChar.Menu.actselect.items.menuitems.getNames(u8 character)
 {
-	if (character == 0x00) && (global.characters == 4)
-		return !(ReimuRandomiser == 4) ? "Reimu & Tails" : "Whoa-oh-oh-oh-oh-oh-oh-oh-oh-oh\n\nTails in Undertale"
-	else if (character == 0x01) && (global.characters == 4)
-		return !(ReimuRandomiser == 4) ? "Reimu" : "Whoa-oh-oh-oh-oh-oh-oh-oh-oh-oh\n\nStory of Undertale"
+	if (character == 0x00) && (global.characters == CHARACTER_REIMU)
+		return !(ReimuRandomiser == CHARACTER_REIMU) ? "Reimu & Tails" : "Whoa-oh-oh-oh-oh-oh-oh-oh-oh-oh\n\nTails in Undertale"
+	else if (character == 0x01) && (global.characters == CHARACTER_REIMU)
+		return !(ReimuRandomiser == CHARACTER_REIMU) ? "Reimu" : "Whoa-oh-oh-oh-oh-oh-oh-oh-oh-oh\n\nStory of Undertale"
     else
         return base.ExtraChar.Menu.actselect.items.menuitems.getNames(character)
 }
 
 function string getFallSpriteKey(u8 character)
 {
-	if (character == CHARACTER_SONIC) && (u8[0xffffe654] == 0) && (global.characters == 4)
+	if (character == CHARACTER_SONIC) && (u8[0xffffe654] == 0) && (global.characters == CHARACTER_REIMU)
 	{
 	    return "reimu_fall"
 	}
@@ -19,8 +19,8 @@ return base.getFallSpriteKey(character)
 
 function string MegamixHud.getCharName(u8 character, u8 extraslot)
 {
-	if (character == CHARACTER_SONIC) && (extraslot == 0) && (global.characters == 4)
-		return (ReimuRandomiser == 4) ? "frisk" : "reimu"
+	if (character == CHARACTER_SONIC) && (extraslot == 0) && (global.characters == CHARACTER_REIMU)
+		return (ReimuRandomiser == CHARACTER_REIMU) ? "frisk" : "reimu"
 
 return base.MegamixHud.getCharName(character, extraslot)
 }
