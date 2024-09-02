@@ -3,9 +3,9 @@
 	"Metadata":
     {
     "Name": "Reimu Rei-mu'd",
-    "Author": "HardSonicStorm, montydoesgames and Kiriii",
-    "Description": "This mod replaces Sonic by Reimu from Touhou! Spritesheet was made by Hartflip0218, Blue Spheres sprites by Blueby and original mod by HardSonicStorm. Includes refreshed sprites, fixed and new palettes and Touhou songs provided by JX!",
-    "ModVersion": "2: The rehabilitation update.",
+    "Author": "HardSonicStorm, montydoesgames",
+    "Description": "This mod adds Reimu from Touhou! Spritesheet was made by Hartflip0218, Blue Spheres sprites by Blueby and original sprite port by HardSonicStorm. Includes refreshed sprites, a new move, new palettes and some songs provided by JX, ZUN and more!",
+    "ModVersion": "3: The M.I.S.C. Update!",
     "GameVersion": "20.03.22.0",
     "UniqueID": "ReimuRemadeBaseMod",
 	},
@@ -15,7 +15,7 @@
 		[
 			{
 				"InternalName": "RIEMUDISGUISE",
-				"DisplayName": "Palette",
+				"DisplayName": "Select an outfit for Reimu.",
 				"Category": "Visuals",
 				"Variable": "ReimuPalette",
 				"DefaultValue": "0",
@@ -23,48 +23,42 @@
 				{
 					"0x00": "Reimu (Genesis accurate)",
 					"0x01": "Reimu (PC-98 accurate)",
-					"0x02": "Marisa",
 					"0x03": "Cirno",
-					"0x04": "Flandre",
-					"0x05": "Koishi",
-					"0x06": "Takane",
-					"0x07": "Bad Apple",
-					"0x08": "Remilia",
 					"0x09": "Sakuya",
-					"0x0a": "Suika",
-					"0x0b": "Lookin' Cool"
+					"0x1b": "Bluemu",
+					"0x1c": "Yellowmu",
+					"0x1d": "Greenmu",
+					"0x1e": "The Reimu Resource",
+					"0x1f": "MEEEDIIC! (RED)",
+					"0x20": "MEEEDIIC! (BLU)",
+					"0x21": "Hardware"
+				}
+			},
+			{
+				"InternalName": "MARISADISGUISE",
+				"DisplayName": "Select an outfit for Marisa.",
+				"Category": "Visuals",
+				"Variable": "MarisaPalette",
+				"DefaultValue": "0",
+				"Options":
+				{
+					"0x00": "Marisa (Genesis accurate)",
+					"0x01": "Marisa (PC-98 accurate)",
+					"0x02": "Hardware",
 				}
 			},
 			{
 				"InternalName": "RIEMUSOOPAH",
-				"DisplayName": "Super Theme",
+				"DisplayName": "Would you like a\nSuper theme with that?",
 				"Category": "Audio",
 				"Variable": "ReimuTheme",
-				"DefaultValue": "0",
+				"DefaultValue": "0x01",
 				"Options":
 				{
-					"0x00": "Palette-based",
 					"0x01": "Eastern Mystical\nTale of Romance",
-					"0x02": "Beloved Tomboyish Girl\n(16-bit Remix)",
-					"0x03": "Night of Nights\n(16-bit Remix)",
-					"0x04": "Bad Apple!!\n(16-bit Remix)",
-					"0x05": "Sonic 3 AIR\n(Option-based)"
-				}
-			},
-			{
-				"InternalName": "STORYOFRIEMUTALE",
-				"DisplayName": "Easter Eggs",
-				"Category": "Extras",
-				"Variable": "ReimuFellFromTheLight",
-				"DefaultValue": "0",
-				"Options":
-				{
-					"0x00": "On",
-					"0x01": "Off",
+					"0x05": "Default A.I.R. Option"
 				}
 			}
         ]
 	}
-}
-
 }
