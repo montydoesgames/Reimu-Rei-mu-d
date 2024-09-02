@@ -1,3 +1,11 @@
+function bool MISC.SetCharAsValid(u8 slotnum) //Determine what values are valid
+{
+	if slotnum == CHARACTER_REIMU
+		return true
+	else	
+		return base.MISC.SetCharAsValid(slotnum)
+}
+
 function u8 getMainCharacter()
 {
 	if (global.characters == CHARACTER_REIMU)
@@ -93,13 +101,13 @@ function void ESS_drawCharacters(s16 px, s16 py, u8 chars, bool no_save)
 	base.ESS_drawCharacters(px, py, chars, no_save)
 }
 
-function s32 ESS_saveBoxGetColor(u8 chars)
+function s32 ESS_savecharGetColor(u8 chars)
 {
 	u8 slotnum = chars - 1
 	if (slotnum == CHARACTER_REIMU)
 		return 0x006c90
 	else
-		return base.ESS_saveBoxGetColor(chars)
+		return base.ESS_savecharGetColor(chars)
 }
 
 //Checking for char names and act select sprites for the act select (Contributed by AtomicRay)
@@ -121,12 +129,12 @@ function string MISC.GetActSelSprite(u8 character)
 	return base.MISC.GetActSelSprite(character)
 }
 
-function bool MISC.RenderPartner(u8 character) //renders partner in act select
+function bool MISC.HasPartner(u8 character) //renders partner in act select
 {
 	u8 slotnum = character - 1
 	if slotnum == CHARACTER_REIMU
 		return false
-	return base.MISC.RenderPartner(character)
+	return base.MISC.HasPartner(character)
 }
 
 function void MISC.drawLifeContSprite(s16 px, s16 py, u16 renderQueue, u8 slotnum)
@@ -273,7 +281,7 @@ function void ESS_switchZoneSelection()
 function bool SpawnAITails(u8 slotnum)
 {
 	if slotnum == CHARACTER_REIMU
-		return true //true means tails carries you into cnz and mhz. false means you just fall in.
+		return false //true means tails carries you into cnz and mhz. false means you just fall in.
 	else
 		return base.SpawnAITails(slotnum)
 }
@@ -288,13 +296,13 @@ function void MISC.getPilot(u8 slotnum)
 	}
 
 	// For MISC by default: Put Tails into the Tornado
-	//fn05eb72()
+	fn05eb72()
 
 	// sonic in tornado (tails version)
 	//fn05eb72()
 
 	// alt sonic (knuckles version)
-	fn05eb9e()
+	//fn05eb9e()
 }
 
 //chooses small pilot
@@ -304,7 +312,7 @@ function u8 MISC.getSmallPilot(u8 slotnum)
 		return base.MISC.getSmallPilot(slotnum)
 
 	//use numbers to determine which pilot
-	return 3
+	return 1
 	// 1 - tails
 	// 2 - sonic
 	// 3 - sonic (knuckles' version)
@@ -357,3 +365,39 @@ function void ExtraChar.Menu.actselect.items.characterlist.drawleader(s16 px, s1
 	base.ExtraChar.Menu.actselect.items.characterlist.drawleader( px, py, renderQueue)
 }
 #endif
+
+// Best Ending stuff
+function string MISC.getEndLogoSprites(u8 animation) //determines your character's sprite in the end logo on the best ending
+{
+	if (global.characters != CHARACTER_REIMU)
+		return base.MISC.getEndLogoSprites(animation)
+	
+	return stringformat("endlogo_reimu_0x%02x", animation)
+}
+
+function u8 MISC.EndLogoGetAnimTimings(u8 AnimEnd) //determines your character's frame timings for the end logo sprites.
+{
+	if (global.characters != CHARACTER_REIMU) // Replace with your char
+		return base.MISC.EndLogoGetAnimTimings(AnimEnd)
+
+	return ((level.framecounter >> 4) % 2)
+		//this is a bit complicated. level.framecounter counts the frames before changing the value, in this case, 4 frames. the number after the % is the amount of frames your character's
+}
+
+function string getCharacterTornadoSpriteKey(u8 character)
+{
+	if (global.characters == CHARACTER_REIMU)
+		return "tornado_reimu"
+
+	return base.getCharacterTornadoSpriteKey(character)
+}
+
+function void MISC.loadEndScreenPalette()
+{
+	if (global.characters == CHARACTER_REIMU)
+	{
+		loadCharacterPalette(4, 0x802240, 0)
+		return
+	}
+	base.MISC.loadEndScreenPalette()
+}
