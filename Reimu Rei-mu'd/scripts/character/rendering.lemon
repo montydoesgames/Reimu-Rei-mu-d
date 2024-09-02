@@ -363,11 +363,6 @@ function void UpdateSonicAnimation()
 		char.animation.timer = 0
 		char.flags &= ~char.flag.PUSHING
 	}
-        if (char.state == 0x36 || char.state == 0x31) //Spring Twirl and Falling
-		{
-			base.UpdateSonicAnimation()
-			return
-		}
 
 	A1 = 0x012aa6
 	A1 = tableLookupAddress(A1, char.state * 2)
@@ -418,20 +413,6 @@ u16 characters = ((objA0.update_address == 0x00d30c) ? dataselect.nosave_charact
         return base.getCharacterSelectSpriteKey(character)
 }
 
-function u64 Monitor.getIconSpriteKey(u8 type)
-{
-	if (type == 0x01) && (isMainCharacter(CHARACTER_SONIC)) && (u8[0xffffe654] == 0)
-	{
-		if (ReimuNitoriCompat) && (Mods.isModActive("Nitori Kawashiro In 3 A.I.R."))
-            return "icon_ReimuNitori"
-        else if (ReimuRandomiser == 4)
-            return "icon_ReimuFrisk"
-        else
-	    	return "icon_Reimu"
-	}
-return base.Monitor.getIconSpriteKey(type)
-}
-
 function string getCharacterBluesphereSpriteKey(u8 character)
 {
 	if global.characters == CHARACTER_REIMU
@@ -466,7 +447,7 @@ function string getCharacterResultsNameplate(u8 character)
 
 function string getCharacterSignpostSpriteKey(u8 character)
 {
-	if (global.characters == CHARACTER_REIMU)
+	if (global.characters == CHARACTER_REIMU) && (character != CHARACTER_TAILS)
 	{
 		string Key = (ReimuEyesGlow) ? (((ReimuPalette == 0x0b) && !Mods.isModActive("ReimuRemadeAlternatePalettes")) ? "ReimuJoker" : "ReimuGlow") : "Reimu"
 		return stringformat("Signpost_%s", Key)
@@ -489,4 +470,98 @@ function string getCharacterLivesIcon(u8 character)
 		return "hud_lives_icon_reimu"
 	else
 		return base.getCharacterLivesIcon(character)
+}
+
+function bool Standalone.onWriteToSpriteTable(s16 px, s16 py, u16 renderQueue)
+{
+	bool prioFlag = (objA0.sprite_attributes & sprite_attribute.PRIORITY) != 0
+
+	if (objA0.update_address >= 0x01d566 && objA0.update_address <= 0x01d61e) && (global.characters == CHARACTER_REIMU)
+	{
+		u8 flags = ((objA0.render_flags & render_flag.FLIP_Y) ? SPRITE_FLAG_FLIP_Y : 0) | (prioFlag ? SPRITE_FLAG_PRIO : 0)
+
+		if (objA0.animation.sprite == 11) // Monitor is broken so don't render icon anymore
+			return base.Standalone.onWriteToSpriteTable(px, py, renderQueue)
+
+		if (Game.getSetting(SETTING_MONITOR_STYLE))
+			py += (objA0.render_flags & render_flag.FLIP_Y) ? 2 : -2
+		else
+			py += (objA0.render_flags & render_flag.FLIP_Y) ? 5 : -5
+
+		if (objA0.animation.sprite > 1) && (objA0.subtype2c == 0x01)
+		{
+			Renderer.drawCustomSprite("icon_reimu", px, py, 0x40, flags, renderQueue + 1)		// Draw monitor icon
+		}
+
+		if (Game.getSetting(SETTING_MONITOR_STYLE))
+			py -= (objA0.render_flags & render_flag.FLIP_Y) ? 2 : -2
+		else
+			py -= (objA0.render_flags & render_flag.FLIP_Y) ? 5 : -5
+	}
+	if (objA0.update_address == 0x01d7ba) && (global.characters == CHARACTER_REIMU)
+	{
+		u8 flags = ((objA0.render_flags & render_flag.FLIP_Y) ? SPRITE_FLAG_FLIP_Y : 0) | (prioFlag ? SPRITE_FLAG_PRIO : 0)
+		u8 alpha = 255
+		if (objA0.base_state == 0x04)
+		{
+			alpha = (s16[A0 + 0x24] > 0) ? min(255, s16[A0 + 0x24] * 32) : 0
+		}
+
+		if (objA0.state == 0x01)
+		{
+			Renderer.drawCustomSprite("icon_reimu", px, py, 0x40, flags, renderQueue + 1, 0, alpha)		// Draw monitor icon
+			return true
+		}
+	}
+
+	return base.Standalone.onWriteToSpriteTable(px, py, renderQueue)
+}
+
+function u64 Monitor.getIconSpriteKey(u8 type) // Just in case :)
+{
+	if (type == 0x01) && (global.characters == CHARACTER_REIMU)
+		return "icon_reimu"
+	else
+		return base.Monitor.getIconSpriteKey(type)
+}
+
+function u64 Standalone.getModdedAnimationSpriteKey(u8 character, u16 animationSpriteEx)
+{
+    if System.getGlobalVariableValueByName("Tenna.quizPlayerSitting") // Sitting
+    {
+        if global.characters == CHARACTER_REIMU
+        {
+            if System.getGlobalVariableValueByName("Tenna.quizPlayerScared")
+                return "character_reimu_quizsit_scared"
+            else if System.getGlobalVariableValueByName("Tenna.quizBoss.Question") == 8 && !System.getGlobalVariableValueByName("Tenna.quizPlayerScared")
+                return "character_reimu_quizsit_bored"
+            else
+                return "character_reimu_quizsit"
+        }
+        else
+        {
+            return base.Standalone.getModdedAnimationSpriteKey(character, animationSpriteEx)
+        }
+    }
+    else if (System.getGlobalVariableValueByName("Tenna.dezSneaking.Active") && (abs(char.groundspeed) < 0x480 || objA0.position.x.u16 < 0x180) && ((char.animation.sprite < 0x31) || (char.state == char.state.STANDING)) && !(char.flags & char.flag.IN_AIR) && (abs(char.rotation) < 0x10)) && (System.callFunctionByName("Tenna.useSneakingControls")) && (global.characters == CHARACTER_REIMU) // Sneaking
+    {
+        return stringformat("character_reimu_sneak_%d", System.getGlobalVariableValueByName("Tenna.dezSneaking.PlayerFrame"))
+    }
+    else if System.getGlobalVariableValueByName("Tenna.wallRunning") && System.getGlobalVariableValueByName("Tenna.wallRunning.renderframetimer") && (global.characters == CHARACTER_REIMU) // Wall running
+    {
+        u64 wr.keyl
+        u64 wr.keyr
+
+        wr.keyl = stringformat("character_reimu_wallrun_l_%d", (global.framecounter >> 1) % (2))
+        wr.keyr = stringformat("character_reimu_wallrun_r_%d", (global.framecounter >> 1) % (2))
+
+        if objA0.position.x.u16 < camera.position.x.u16 + getScreenWidth() / 2
+            return wr.keyl
+        else
+            return wr.keyr
+    }
+    else
+    {
+        return base.Standalone.getModdedAnimationSpriteKey(character, animationSpriteEx)
+    }
 }

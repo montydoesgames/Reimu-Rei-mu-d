@@ -16,8 +16,8 @@ function void fn01a19c()
 	objA0.mapping_offset = 0x01a464
 	objA0.render_flags = render_flag.WORLD
 	objA0.sprite_priority = 0x80
-	objA0.box_size.x = 0x30
-	objA0.box_size.y = 0x30
+	objA0.box_size.x = 0x40
+	objA0.box_size.y = 0x40
 	objA0.sprite_attributes = (sprite_attribute.PRIORITY | (Char.Player1.targetInVRAM >> 5))
 	objA0.position.x.u16 = u16[0xffffb010]
 	objA0.position.y.u16 = u16[0xffffb014]
@@ -40,6 +40,7 @@ function void fn01a1f4()
 	}
 
 	fn01a292()
+	GoheiStickUpdateRingCollection()
 
 	// Some rendering shenanigans we don't really need another function for
 
@@ -57,6 +58,9 @@ function void fn01a1f4()
 	{
 		objA0.render_flags |= render_flag.FLIP_Y
 	}
+
+	if objA0.animation.sprite == 0
+		playSound(SFX_INSTASHIELD)
 
 	--objA0.animation.timer
 	if (s8(objA0.animation.timer) < 0)
@@ -78,67 +82,187 @@ function void fn01a292()
 		return
 	}
 
-	if objA0.base_state == 0x02
+	if (objA0.base_state == 0x02)
 	{
 		objA0.position.x.u16 = u16[0xffffb010]
 		objA0.position.y.u16 = u16[0xffffb014]
 
 		if !(control.player1.state & CONTROL_ABC)
+		{
 			objA0.base_state = 0x04
+			u8[0xffffb02f] = 2
+			objA0.countdown_value = 15
+		}
 		else if (u8[0xffffb02f] != 1)
 			UnloadObject()
 	}
-	else if objA0.base_state == 0x04
+	else if (objA0.base_state == 0x04)
 	{
 		objA0.position.x.u16 += (objA0.render_flags & render_flag.FLIP_X) ? -8 : 8
-	}
 
-	if (u8[A0 + 0x30] == 0)
-	{
-		bool goto01a2ac = false
-		if (u8[A0 + 0x32] != 0)
+		--objA0.countdown_value
+		if (objA0.countdown_value < 0)
 		{
-			--u8[A0 + 0x32]
-			goto01a2ac = true
-		}
-		else
-		{
-			fn01a3fe()
-			goto01a2ac = (D1.u16 == 0)
-		}
-
-		if (goto01a2ac)
-		{
-			D0.u8 = u8[A0 + 0x34]
-			LookupSinCos()
-			D0.s16 >>= 3
-			D1.s16 >>= 4
-			D2.u16 = u16[0xffffb000 + 0x10]
-			D3.u16 = u16[0xffffb000 + 0x14] - 0x20
-			if (global.inv_gravity)
-				D3.u16 += 0x40
-			D2.u16 += D0.u16
-			D3.u16 += D1.u16
-			return
+			objA0.base_state = 0x06
+			objA0.countdown_value = 60
 		}
 	}
-
-	A1 = 0xffff0000 + objA0.value42
-	D2.u16 = objA1.position.x.u16
-	D3.u16 = objA1.position.y.u16
-	if (objA1.render_flags & render_flag.VISIBLE)
+	else if (objA0.base_state == 0x06)
 	{
-		D0.s16 = objA0.position.x.u16 - D2.u16
-		D1.u16 = objA0.position.y.u16 - D3.s16
-		if (D0.s16 >= 0x40 || D1.s16 >= 0x40) || (D0.s16 <= -0x40 || D1.s16 <= -0x40)
-			return
+		--objA0.countdown_value
+		if (objA0.countdown_value < 0)
+		{
+			objA0.base_state = 0x08
+			objA0.countdown_value = 300
+		}
+	}
+	else
+	{
+		D2.u16 = u16[0xffffb000 + 0x10]
+		D3.u16 = u16[0xffffb000 + 0x14]
+		fn01a37a()
 
-		fn01a31e()
+		s16 xfromplayer = objA0.position.x.u16 - s16[0xffffb010]
+		s16 yfromplayer = objA0.position.y.u16 - s16[0xffffb014]
+		bool reachedPlayer = (xfromplayer <= 0x08 && xfromplayer >= -0x08) && (yfromplayer <= 0x08 && yfromplayer >= -0x08)
+
+		--objA0.countdown_value
+		if (objA0.render_flags & render_flag.VISIBLE)
+		{
+			objA0.countdown_value = 300
+		}
+
+		if (reachedPlayer) || (objA0.countdown_value < 0) // Unload if close enough to the player, or if too far away
+			UnloadObject()
+	}
+
+	D6.u16 = global.dynamic_objects.size
+	A4 = addressof(global.dynamic_objects.size) + 2		// Resulting address: 0xffffe382
+	if (D6.u16 != 0)
+	{
+		u8[0xfffff66c] += 2
+		if (u8[0xfffff66c] >= D6.u8)
+		{
+			u8[0xfffff66c] = 0
+		}
+
+		D0 = u8[0xfffff66c]
+		D6.u16 -= D0.u16
+		A4 += D0.s16
+		while (D6.u16 != 0)
+		{
+			A1 = 0xffff0000 + u16[A4]
+			A4 += 2
+			D2.u16 = objA1.position.x.u16
+			D3.u16 = objA1.position.y.u16
+			if (objA1.render_flags & render_flag.VISIBLE)
+			{
+				D0.s16 = objA0.position.x.u16 - D2.u16
+				D1.u16 = objA0.position.y.u16 - D3.s16
+				if (D0.s16 >= 0x40 || D1.s16 >= 0x40) || (D0.s16 <= -0x40 || D1.s16 <= -0x40)
+					return
+		
+				fn01a31e()
+			}
+		}
 	}
 
 	u8[A1 + 0x2d] = 0
 	u8[A0 + 0x30] = 0
 	u8[A0 + 0x32] = 0x78
+
+}
+
+function void GoheiStickUpdateRingCollection()
+{
+	// Shortly after getting hit, you can't collect rings
+	if (u8[0xffffb034] >= 90)
+		return
+
+	u16 box.pos.x
+	u16 box.pos.y
+	u16 box.size.x
+	u16 box.size.y
+
+	box.pos.x = objA0.position.x.u16 - 0x20
+	box.pos.y = objA0.position.y.u16 - 0x20
+	box.size.x = objA0.box_size.x
+	box.size.y = objA0.box_size.y
+
+#if STANDALONE
+	if (DEBUG_DYNAMIC_COLLISIONS >= 3)
+		debugDrawRect(box.pos.x, box.pos.y, box.size.x, box.size.y, 0x80ffff00)
+#endif
+
+	// Cycle through list of all rings with x-position in screen area
+	A1 = rings.around.first
+	A2 = rings.around.last
+	A4 = 0xffff0000 + rings.around.first.state
+
+	while (A1 != A2)
+	{
+		// Check if already collected
+		if (u16[A4] == 0)
+		{
+			u16 ring.x = u16[A1 + 0]
+			u16 ring.y = u16[A1 + 2]
+
+			s16 ring.offset = 6
+			s16 ring.size = 12
+
+			u16 px = ring.x - ring.offset
+			u16 py = ring.y - ring.offset
+
+		#if STANDALONE
+			// Consider vertical level wrap
+			if (level.vertical_wrap == 0xff00)
+			{
+				s16 dy = py - box.pos.y
+				if (dy < -s16(level.height.bitmask)/2)
+				{
+					py += (level.height.bitmask + 1)
+				}
+				else if (dy > level.height.bitmask/2)
+				{
+					py -= (level.height.bitmask + 1)
+				}
+			}
+		#endif
+
+		#if STANDALONE
+			if (DEBUG_DYNAMIC_COLLISIONS >= 3)
+				debugDrawRect(px, py, ring.size, ring.size, 0x80ffff00)
+		#endif
+
+			if (checkBoxOverlap(box.pos.x, box.pos.y, box.size.x, box.size.y, px, py, ring.size, ring.size))
+			{
+				if (char.bonus_effect & char.bonus.SHIELD_LIGHTNING)
+				{
+					if (makeDynamicRing())
+						return
+				}
+
+				// Start ring animation, ring counts as collected now
+				u16[A4] = 0x0604
+
+				// Collect this ring
+				CollectLevelRing()
+
+				// This seems to be some kind of table of the currently animated rings
+				A3 = 0xffffef82
+				while (u16[A3] != 0)
+				{
+					A3 += 2
+				}
+				u16[A3] = A4.u16
+
+				++u16[0xffffef80]
+			}
+		}
+
+		A1 += 4
+		A4 += 2
+	}
 }
 
 function bool Standalone.onWriteToSpriteTable(s16 px, s16 py, u16 renderQueue)
@@ -147,7 +271,7 @@ function bool Standalone.onWriteToSpriteTable(s16 px, s16 py, u16 renderQueue)
 	{
 		if (global.characters == CHARACTER_REIMU) // Reimu
 		{
-			Renderer.drawCustomSprite(stringformat("Reimu_Gohei_%d", objA0.animation.sprite), px, py, 0x40, SPRITE_FLAG_PRIO, renderQueue)
+			Renderer.drawCustomSprite(stringformat("Reimu_Gohei_%d", objA0.animation.sprite), px, py, 0x00, objA0.render_flags + SPRITE_FLAG_PRIO, renderQueue)
 			return true
 		}
 	}
@@ -167,5 +291,130 @@ function void SonicPressedJumpInMidAir()
 	char.flags &= ~char.flag.CONTROL_LOCK
 	char.double_jump_state = 1	// Always set this flag; needed for Drop Dash
 
-	u32[0xffffcd7c] = 0x01a19c
+	u32[0xffffcc0a] = 0x01a19c
+}
+
+function void Character.updateJumpMoves()
+{
+	if (global.characters != CHARACTER_REIMU)
+	{
+		base.Character.updateJumpMoves()
+		return
+	}
+
+	u8 input_state     = (char.character == CHARACTER_TAILS) ? control.tails.state   : control.player1.state
+	u8 input_pressed   = (char.character == CHARACTER_TAILS) ? control.tails.pressed : control.player1.pressed
+	bool isSuperActive = (char.character == CHARACTER_TAILS) ? super.active.tails    : super.active
+
+	if (char.jumping)
+	{
+		// Limit velocity.y
+		s16 max_vy = (char.flags & char.flag.UNDERWATER) ? -0x200 : -0x400
+		if (char.velocity.y < max_vy)
+		{
+			// Limit vertical velocity while not pressing any jump button
+			//  -> This is important to support low jumps by just tapping the button briefly
+			if ((input_state & CONTROL_ABC) == 0)
+			{
+				char.velocity.y = max_vy
+			}
+		}
+		else
+		{
+			if (char.double_jump_state == 0)
+			{
+				#if STANDALONE
+					if (Input.buttonPressed(BUTTON_Y))
+					{
+						if (!isSuperActive && char.invuln.countdown == 0)	// Check invulnerability to prevent spamming of super activate + cancel
+						{
+							if (Character.performSuperTransformation())
+								return
+						}
+					}
+				#endif
+
+				// Check if pressed jump again in mid-air
+				if (input_pressed & CONTROL_ABC)
+				{
+				#if STANDALONE
+					// Check for other things to do instead of the usual reaction to jump button pressed
+					if (onCharacterPressedJumpInMidAir(input_state, input_pressed))
+				#endif
+					{
+						if (char.character == CHARACTER_SONIC)
+						{
+							SonicPressedJumpInMidAir()
+						}
+						else if (char.character == CHARACTER_TAILS)
+						{
+							TailsPressedJumpInMidAir()
+						}
+						else if (!competition_mode.active)
+						{
+							KnucklesPressedJumpInMidAir()
+						}
+						else
+						{
+							// Knuckles behaves just like Sonic in competition mode
+							SonicPressedJumpInMidAir()
+						}
+					}
+				}
+			}
+
+		#if STANDALONE
+			if (Game.getSetting(SETTING_DROPDASH) && char.character == CHARACTER_SONIC && !competition_mode.active) && (global.characters != CHARACTER_REIMU)
+			{
+				// Handle drop dash
+				//  -> Can only be charged if there is no shield active (only exception: drop dash charge started already, when shield gets active -- this reflects Sonic Mania's behavior)
+				//  -> But can be charged if invincible (incl. Super / Hyper Sonic)
+				bool chargeDropDash = (control.player1.state & CONTROL_ABC) && ((char.bonus_effect & char.bonus.ELEMENTAL_SHIELDS) == 0 || (char.bonus_effect & char.bonus.INVINCIBLE) || sonic.dropdash_counter > 0) && char.double_jump_state
+				if (chargeDropDash)
+				{
+					if (sonic.dropdash_counter < DROPDASH_FULLCHARGE)
+					{
+						// Drop dash charging
+						++sonic.dropdash_counter
+						if (sonic.dropdash_counter == DROPDASH_FULLCHARGE)
+						{
+							// Fully charged now
+							char.state = char.state.SONIC_DROPDASH
+							Audio.playAudio("dropdash_charge", AudioContext.CONTEXT_SOUND)
+						}
+					}
+					Input.setControllerRumbleByAddress(A0, 0.0f, 0.25f, 100)
+				}
+				else if (sonic.dropdash_counter > 0)
+				{
+					// Abort drop dash
+					sonic.dropdash_counter = 0
+					char.state = char.state.ROLLING
+				}
+			}
+		#endif
+		}
+	}
+	else
+	{
+		if (char.spindash == 0)
+		{
+			char.velocity.y = max(char.velocity.y, -0x0fc0)
+		}
+	}
+}
+
+//# address-hook(0x012232) end(0x0122b8)
+function void SonicLandingBubbleBounce()
+{
+	if (global.characters == CHARACTER_REIMU)
+		return
+base.SonicLandingBubbleBounce()
+}
+
+function bool Character.updateSuperPeelout()
+{
+	if (global.characters == CHARACTER_REIMU)
+		return false
+return base.Character.updateSuperPeelout()
 }
