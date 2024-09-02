@@ -1,16 +1,17 @@
 Credits - Reimu Rei-mu'd
-HardSonicStorm: Creator of the original mod.
-Hartflip0218: Creator of the S3-styled Reimu sprites
-Blueby: Original Blue Spheres sprites
-montydoesgames: Creator of Reimu Rei-mu'd, bmp re-indexor, script maker, paletter
-scarlet_witch: Paletter
-lhugueny: Easter Egg Palette's song
-ZUN and Twilight Frontier: Eastern Tale of Mystical Romance and other Touhou songs
-JX: 16-bit remixes of Touhou music
-FancyDoggy: Main Menu music scripts
-Atlus: Persona music
+HardSonicStorm - Creator of the original Reimu over Sonic mod.
+Hartflip0218 - Creator of the S3-styled Reimu sprites
+Blueby - Original Reimu Blue Spheres sprites
+montydoesgames - Creator of Reimu Rei-mu'd, bmp re-indexor, scripter for both the mod itself and the character framework, and creating palettes
+scarlet_witch - Creating palettes
+ZUN - Eastern Tale of Mystical Romance, Touhou Hisoutensoku sprites used for the Data Select portraits and Gohei Stick, Touhou, Reimu and Marisa
+Tasogare Frontier - Touhou Hisoutensoku sprites used for the Data Select portraits and Gohei Stick
+Twilight Frontier - Eastern Tale of Mystical Romance
+FancyDoggy - Main Menu music scripts
+AtomicRay - Scripting the character framework
+Nabbup - Scripting the character framework
 
-Credits - Reimu Rei-mu'd Alternate Edition
+Credits - Reimu Rei-mu'd: Alternate Edition
 SHADED
 DolphinCube
 ScarlyNight
@@ -25,3 +26,9 @@ Rookie
 montydoesgames
 Bluespeed
 Yebby
+
+Credits - Reimu Rei-mu'd: Extras Extravaganza
+lhugueny - Easter Egg Palette's song
+ZUN and Twilight Frontier - Touhou songs
+JX - 16-bit remixes of Touhou music
+Atlus - Persona music
