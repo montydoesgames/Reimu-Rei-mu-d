@@ -8,8 +8,8 @@ ZUN - Eastern Tale of Mystical Romance, Touhou Hisoutensoku sprites used for the
 Tasogare Frontier - Touhou Hisoutensoku sprites used for the Data Select portraits and Gohei Stick
 Twilight Frontier - Eastern Tale of Mystical Romance
 FancyDoggy - Main Menu music scripts
-AtomicRay - Scripting the character framework
-Nabbup - Scripting the character framework
+AtomicRay - Scripting for the character framework
+Nabbup - Scripting for the character framework
 
 Credits - Reimu Rei-mu'd: Alternate Edition
 SHADED
