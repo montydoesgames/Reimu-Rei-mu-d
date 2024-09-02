@@ -100,5 +100,19 @@ function void MainMenuBG.Run()
 		yieldExecution()
 		++level.framecounter
 	}
-	
+}
+
+function bool Stone.canFightStoneBuggy()
+{
+	if (global.characters == CHARACTER_REIMU)
+		return true // Reimu can fight Stone Buggy
+	return base.Stone.canFightStoneBuggy()
+}
+
+function s32 ESS_saveBoxGetColor(u8 chars)
+{
+	if (chars == (CHARACTER_REIMU + 1))
+		return 0x006c90
+
+return base.ESS_saveBoxGetColor(chars)
 }

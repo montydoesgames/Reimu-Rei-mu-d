@@ -11,11 +11,6 @@ constant array<string> REIMU_SUPERTHEME =
 
 function void Standalone.playAudio(u8 sfxId)
 {
-	if (!Mods.isModActive("ReimuRemadeExtrasExtravaganza"))
-	{
-		base.Standalone.playAudio(sfxId)
-		return
-	}
 
 ReimuEyesGlow = (((ReimuPalette == 0x0b) && !Mods.isModActive("ReimuRemadeAlternatePalettes")) || ((ReimuPalette == 0x0c) && Mods.isModActive("ReimuRemadeAlternatePalettes"))) ? true : false
 if (sfxId <= 0x32) || (sfxId == 0xf0) && (global.characters == CHARACTER_REIMU)

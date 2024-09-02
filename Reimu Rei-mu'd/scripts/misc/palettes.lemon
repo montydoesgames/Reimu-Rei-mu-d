@@ -1,4 +1,5 @@
 global u8 ReimuPalette
+global u8 MarisaPalette
 global u8 ReimuFellFromTheLight
 global u8 ReimuRandomiser
 global u8 ReimuNitoriCompat
@@ -6,7 +7,7 @@ global bool ReimuEyesGlow
 
 function u64 getCharacterPaletteKey(u8 character)
 {
-    if (ReimuRandomiser == 0) && !(ReimuFellFromTheLight)
+    if (ReimuRandomiser == 0) && !(ReimuFellFromTheLight) && (Mods.isModActive("ReimuRemadeExtrasExtravaganza"))
         ReimuRandomiser = System.rand() % 20
 
 	if (character == CHARACTER_SONIC) && (u8[0xffffe654] == 0) && (global.characters == CHARACTER_REIMU)
@@ -18,13 +19,16 @@ function u64 getCharacterPaletteKey(u8 character)
 	    else
 		    return stringformat("reimu_%d", ReimuPalette)
 	}
+	else if (character == CHARACTER_TAILS) && (u8[0xffffe654] == 0) && (global.characters == CHARACTER_REIMU) && (global.zone_act.apparent == 0x0000 || global.zone_act.apparent == 0x0d01) // Marisa pilot in AIZ1 and Outro
+	{
+		return stringformat("marisa_%d", MarisaPalette)
+	}
+
 	return base.getCharacterPaletteKey(character)
 }
 
 function u64 getCharacterBluespherePaletteKey(u8 character)
 {
-    if (ReimuRandomiser == 0) && !(ReimuFellFromTheLight)
-        ReimuRandomiser = System.rand() % 20
 
 	if (character == CHARACTER_SONIC) && (u8[0xffffe654] == 0) && (global.characters == CHARACTER_REIMU)
 		return getCharacterPaletteKey(character)

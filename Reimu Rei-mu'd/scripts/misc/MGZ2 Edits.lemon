@@ -1,0 +1,150 @@
+//# address-hook(0x0512a6) end(0x0512ba)
+function void InitLevelTiles.MGZ2()
+{
+	if (global.characters == CHARACTER_REIMU)
+	{
+		if (allocDynamicObjectStd())
+		{
+			objA1.update_address = 0x06d104
+		}
+	}
+base.InitLevelTiles.MGZ2()
+}
+
+//# address-hook(0x01c96e) end(0x01c9c6)
+function void fn01c96e()
+{
+	if !(global.characters == CHARACTER_REIMU)
+	{
+		base.fn01c96e()
+		return
+	}
+
+	if (camera.position.x.u16 >= 0x3a00)
+	{
+		move_area.left = 0x3a00
+
+		requestLoadingPatterns(0x6d)	// Robotnik's ship, boss explosions, and capsule sprites
+		loadPaletteLine1(0x06d97c)
+
+		if (allocDynamicObjectStd())
+		{
+			// Trigger boss
+			objA1.update_address = 0x086540
+			objA1.position.x.u16 = 0x3d10
+			objA1.position.y.u16 = 0x730
+		}
+
+		camera.update_routine += 2
+	}
+	else
+	{
+		D0 = 0x1000
+		u32[0xffffee18] = D0
+		u32[0xffffee10] = D0
+
+		D0.u16 = 0x6000
+		move_area.right = D0.u16
+		move_area.right.target = D0.u16
+
+		camera.update_routine -= 2
+	}
+}
+
+//# address-hook(0x06d104) end(0x06d138)
+function void fn06d104()
+{
+	if (global.characters != CHARACTER_REIMU)
+	{
+		base.fn06d104()
+		return
+	}
+
+#if STANDALONE
+	// Very slightly blend between colors
+	//  -> Doesn't look that great, so it's just for few frames
+	//  -> Maybe this needs some changes to the sunset palettes and timings to work better?
+	u16 offset = objA0.value39
+	u32 src1 = 0x364896 + offset * 0x10
+	if (objA0.countdown_value >= 4 || offset == 0x1e)
+	{
+		copyMemory(0xfffffc60, src1, 0x20)
+	}
+	else
+	{
+		u32 src2 = 0x364896 + (offset + 2) * 0x10
+		for (u8 i = 0; i < 0x20; i += 2)
+		{
+			u16[0xfffffc60 + i] = blendColorsPacked(u16[src2 + i], u16[src1 + i], objA0.countdown_value * 0x40)
+		}
+	}
+
+	--objA0.countdown_value
+	if (objA0.countdown_value >= 0)
+		return
+
+#else
+	--objA0.countdown_value
+	if (objA0.countdown_value >= 0)
+		return
+
+	u16 offset = objA0.value39
+	A1 = 0x364896 + offset * 0x10
+	copyMemory(0xfffffc60, A1, 0x20)
+#endif
+
+	objA0.countdown_value = u16[0x06d14c + offset]
+	objA0.value39 += 2
+	if (objA0.value39 >= 0x12)
+	{
+		UnloadObject()
+	}
+}
+
+//# address-hook(0x02dcca)
+function void LevelResults.AdvanceToNextAct()
+{
+	if !((global.characters == CHARACTER_REIMU) && (global.zone_act.apparent == 0x0201))
+	{
+		base.LevelResults.AdvanceToNextAct()
+		if (global.characters == CHARACTER_REIMU) && (global.zone_act.apparent == 0x0201)
+		{
+			if (allocDynamicObjectStd())
+			{
+				objA1.update_address = 0x06d104
+			}
+		}
+		return
+	}
+
+#if STANDALONE
+	if (level.restart)
+	{
+		// Fix "frame-perfect reset" bug, but only for highest level of glitch fix setting
+		if (Game.getSetting(SETTING_FIX_GLITCHES) >= 2)
+		{
+			UnloadObject()
+			return
+		}
+	}
+#endif
+
+	if (objA0.countdown_value != 0)
+	{
+		--objA0.countdown_value
+		return
+	}
+
+	if (u16[A0 + 0x30] != 0)
+	{
+		++objA0.value32
+		return
+	}
+
+	level.wait_for_results = 0
+
+	if (allocDynamicObjectStd())
+	{
+		objA1.update_address = 0x06c8f4
+	}
+}

@@ -1,0 +1,25 @@
+//# address-hook(0x005fb2) end(0x0067b4)
+function void GameMode.MainGame()
+{
+	if (global.characters == CHARACTER_REIMU)
+		SetReimuDiscordRPC()
+
+	base.GameMode.MainGame()
+}
+
+function void SetReimuDiscordRPC()
+{
+	bool SuperEmeralds = (global.super_emeralds > 0)
+	bool MultipleEmeralds = ((global.chaos_emeralds > 1) && (global.super_emeralds == 0)) || (global.super_emeralds > 1)
+
+	string EmeraldTypeString = stringformat("%s Emerald%s", ((SuperEmeralds) ? "Super" : "Chaos"), ((MultipleEmeralds) ? "s" : ""))
+
+	string EmeraldRPC = stringformat("%d %s", ((SuperEmeralds) ? global.super_emeralds : global.chaos_emeralds), EmeraldTypeString)
+
+	if (global.chaos_emeralds == 0 && global.traded_emeralds == 0)
+		Game.setDiscordDetails("Reimu")
+	else
+		Game.setDiscordDetails(stringformat("Reimu (%s)", EmeraldRPC))
+
+	Game.setDiscordSmallImage("character_unknown")
+}
