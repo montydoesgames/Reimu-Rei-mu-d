@@ -1,0 +1,13 @@
+{
+	"bluesphere_reimu_0x01":  { "File": "BlueSpheres.bmp", "Rect": "0,7,32,41", "Center": "16,35" },
+	"bluesphere_reimu_0x02":  { "File": "BlueSpheres.bmp", "Rect": "32,4,32,48", "Center": "16,43" },
+	"bluesphere_reimu_0x03":  { "File": "BlueSpheres.bmp", "Rect": "64,0,32,56", "Center": "16,43" },
+	"bluesphere_reimu_0x04":  { "File": "BlueSpheres.bmp", "Rect": "96,0,32,56", "Center": "16,43" },
+	"bluesphere_reimu_0x05":  { "File": "BlueSpheres.bmp", "Rect": "128,0,32,56", "Center": "18,43" },
+	"bluesphere_reimu_0x06":  { "File": "BlueSpheres.bmp", "Rect": "160,0,32,56", "Center": "17,43" },
+	"bluesphere_reimu_0x07":  { "File": "BlueSpheres.bmp", "Rect": "192,0,32,56", "Center": "17,43" },
+	"bluesphere_reimu_0x08":  { "File": "BlueSpheres.bmp", "Rect": "224,0,32,56", "Center": "16,43" },
+	"bluesphere_reimu_0x09":  { "File": "BlueSpheres.bmp", "Rect": "256,12,32,32", "Center": "16,38" },
+	"bluesphere_reimu_0x0a":  { "File": "BlueSpheres.bmp", "Rect": "288,12,32,32", "Center": "16,38" },
+	"bluesphere_reimu_0x0b":  { "File": "BlueSpheres.bmp", "Rect": "320,12,32,32", "Center": "16,38" }
+}

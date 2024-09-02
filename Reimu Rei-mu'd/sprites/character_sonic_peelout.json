@@ -1,0 +1,11 @@
+{
+	"reimu_peelout_0":  { "File": "character_sonic_peelout.bmp", "Rect": "0,0,40,40", "Center": "20,20" },
+	"reimu_peelout_1":  { "File": "character_sonic_peelout.bmp", "Rect": "39,0,40,40", "Center": "20,20" },
+	"reimu_peelout_2":  { "File": "character_sonic_peelout.bmp", "Rect": "78,0,40,40", "Center": "20,20" },
+	"reimu_peelout_3":  { "File": "character_sonic_peelout.bmp", "Rect": "119,0,40,40", "Center": "20,20" },
+
+	"reimumedic_peelout_0":  { "File": "ReiMedic/Peelout.bmp", "Rect": "0,0,40,40", "Center": "20,20" },
+	"reimumedic_peelout_1":  { "File": "ReiMedic/Peelout.bmp", "Rect": "39,0,40,40", "Center": "20,20" },
+	"reimumedic_peelout_2":  { "File": "ReiMedic/Peelout.bmp", "Rect": "78,0,40,40", "Center": "20,20" },
+	"reimumedic_peelout_3":  { "File": "ReiMedic/Peelout.bmp", "Rect": "119,0,40,40", "Center": "20,20" },
+}

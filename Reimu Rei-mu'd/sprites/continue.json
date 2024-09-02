@@ -1,0 +1,8 @@
+{
+	"character_reimu_continue_0x00": { "File": "Cont_Wait.bmp", "Rect": "8,8,48,48", "Center": "24,28" },
+	"character_reimu_continue_0x01": { "File": "Cont_Wait.bmp", "Rect": "64,8,48,48", "Center": "24,28" },
+
+	"continue_icon_reimu_wait_0x00": { "File": "ESS.png", "Rect": "42,44,16,16", "Center": "8,16" },
+	"continue_icon_reimu_wait_0x01": { "File": "ESS.png", "Rect": "42,44,16,16", "Center": "8,16" },
+
+}

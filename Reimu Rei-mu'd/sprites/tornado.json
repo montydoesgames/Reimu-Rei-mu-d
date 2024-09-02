@@ -1,0 +1,6 @@
+{
+	"tornado_reimu_small":  { "File": "Tornado_Generic.bmp", "Rect": "72,8,16,24", "Center": "8,12" },
+	"MiniReimu":  { "File": "Outro_Micro.bmp", "Rect": "0,0,5,7", "Center": "0,5" },
+	"tornado_pilot_marisa": { "File": "Tornado_Generic.bmp", "Rect": "8,3,32,21", "Center": "20,13" },
+	"tornado_pilot_marisa_small": { "File": "Tornado_Generic.bmp", "Rect": "48,5,16,11", "Center": "8,7" },
+}

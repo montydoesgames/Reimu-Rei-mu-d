@@ -1,0 +1,4 @@
+{
+	"Signpost_Reimu":  { "File": "goalplates.bmp", "Rect": "0,0,48,32", "Center": "24,16" },
+	"ActClear_Reimu":  { "File": "Nameplate.png", "Rect": "0,0,76,24", "Center": "0,4" }
+}

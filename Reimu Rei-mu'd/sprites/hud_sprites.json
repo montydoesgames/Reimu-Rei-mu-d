@@ -1,0 +1,6 @@
+{
+	"hud_lives_icon_reimu":  { "File": "life.png", "Rect": "0,0,48,16", "Center": "0,0" },
+	"icon_reimu":  { "File": "lifeicon.bmp", "Rect": "0,0,16,16", "Center": "8,8" },
+	"continue_icon_reimu":  { "File": "ESS.png", "Rect": "42,44,16,16", "Center": "8,16" },
+	"hud_icon_bonus_reimu":  { "File": "hudbonus.png", "Rect": "0,0,12,20", "Center": "0,0" },
+}

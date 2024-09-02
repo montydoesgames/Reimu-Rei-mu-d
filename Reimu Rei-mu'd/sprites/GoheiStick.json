@@ -1,0 +1,10 @@
+{
+	"Reimu_Gohei_0":  { "File": "GoheiStick.bmp", "Rect": "0,0,128,128", "Center": "64,64" },
+	"Reimu_Gohei_1":  { "File": "GoheiStick.bmp", "Rect": "128,0,128,128", "Center": "64,64" },
+	"Reimu_Gohei_2":  { "File": "GoheiStick.bmp", "Rect": "256,0,128,128", "Center": "64,64" },
+	"Reimu_Gohei_3":  { "File": "GoheiStick.bmp", "Rect": "384,0,128,128", "Center": "64,64" },
+	"Reimu_Gohei_4":  { "File": "GoheiStick.bmp", "Rect": "0,128,128,128", "Center": "64,64" },
+	"Reimu_Gohei_5":  { "File": "GoheiStick.bmp", "Rect": "128,128,128,128", "Center": "64,64" },
+	"Reimu_Gohei_6":  { "File": "GoheiStick.bmp", "Rect": "256,128,128,128", "Center": "64,64" },
+	"Reimu_Gohei_7":  { "File": "GoheiStick.bmp", "Rect": "384,128,128,128", "Center": "64,64" },
+}

@@ -1,0 +1,13 @@
+{
+    "character_reimu_quizsit":    { "File": "character_reimu_sit.bmp", "Rect": "0,0,64,48", "Center": "45,31" },
+    "character_reimu_quizsit_scared":    { "File": "character_reimu_sit.bmp", "Rect": "128,0,64,48", "Center": "45,31" },
+    "character_reimu_quizsit_bored":    { "File": "character_reimu_sit.bmp", "Rect": "192,0,64,48", "Center": "45,31" },
+
+    "character_reimu_sneak_0":    { "File": "character_reimu_sneak.bmp", "Rect": "0,0,40,48", "Center": "20,24" },
+    "character_reimu_sneak_1":    { "File": "character_reimu_sneak.bmp", "Rect": "40,0,40,48", "Center": "20,24" },
+
+	"character_reimu_wallrun_l_0":    { "File": "character_reimu_wallrun.bmp", "Rect": "0,0,40,40", "Center": "20,20" },
+	"character_reimu_wallrun_l_1":    { "File": "character_reimu_wallrun.bmp", "Rect": "0,40,40,40", "Center": "20,20" },
+	"character_reimu_wallrun_r_0":    { "File": "character_reimu_wallrun.bmp", "Rect": "40,0,40,40", "Center": "20,20" },
+	"character_reimu_wallrun_r_1":    { "File": "character_reimu_wallrun.bmp", "Rect": "40,40,40,40", "Center": "20,20" },
+}

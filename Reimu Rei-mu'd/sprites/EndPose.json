@@ -1,0 +1,5 @@
+{
+	"endpose_reimu_0x00": { "File": "ReimuEndposes.bmp", "Rect": "1,45,32,46" },
+	"endpose_reimu_0x01": { "File": "ReimuEndposes.bmp", "Rect": "35,13,94,104", "Center": "46,52" },
+	"endpose_superreimu": { "File": "ReimuEndposes.bmp", "Rect": "131,34,74,74", "Center": "37,37" }
+}
