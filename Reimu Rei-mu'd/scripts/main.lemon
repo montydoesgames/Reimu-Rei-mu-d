@@ -3,3 +3,34 @@ include character/?
 include newslot/?
 
 constant u8 CHARACTER_REIMU = 6
+
+function bool SHCSplash.shouldShowUpAfterStartup()
+{
+	return true
+}
+
+function void SHCSplash.showSplashScreen()
+{
+	u16 numColors = System.loadExternalPaletteData(stringformat("reimu_%d", ReimuPalette), 0, 0x800000, 0x20)
+	for (u8 i = 0; i < numColors; ++i)
+	{
+		u32 rgba = u32[0x800000 + i * 4]
+		u16[0x802000 + i * 2] = packColorExt(rgba)
+	}
+
+	for (u16 i = 0; i < 0xc0; ++i)
+	{
+		Renderer.setPaletteEntryPacked(i + 0x40, u16[0x802000 + i * 2])
+	}
+
+	// Wait in a black screen
+	SHCSplash.setPalette(0)
+	playSound(SFX_ROLL)
+	for (s16 px = -48; px <= getScreenWidth() + 128; px += 16)
+	{
+		Renderer.resetSprites()
+		Renderer.drawCustomSprite(stringformat("reimu_peelout_%d", ((px < 0) ? ((-px / 8) % 4) : ((px / 16) % 4))), px, 200, 0x40, 0, 0xffffffff)
+		yieldExecution()
+	}
+base.SHCSplash.showSplashScreen()
+}
