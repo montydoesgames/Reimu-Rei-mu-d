@@ -1,5 +1,5 @@
 # Reimu Rei-mu'd
-⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀It's time to once again revisit your favourite floating island, with a new character!
+It's time to once again revisit your favourite floating island, with a new character!
 
 This Sonic 3 A.I.R. mod adds Reimu Hakurei from Touhou into the game without overriding any other characters. Since a simple skin mod would not do this character justice, Reimu has also been given a unique move, where she throws her Gohei Stick!
 
